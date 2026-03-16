@@ -44,7 +44,7 @@
     - breeze-gtk
 
 - name: "Gaming"
-  description: "Steam, Proton, MangoHUD, GameMode e ferramentas para jogos. Requires internet connection."
+  description: "Steam, Proton-GE, MangoHUD, GameMode e ferramentas para jogos. Requires internet connection."
   hidden: false
   selected: false
   critical: false
@@ -56,12 +56,17 @@
     - mangohud
     - lib32-mangohud
     - protonup-qt
-    - wine
+    - wine-staging
     - winetricks
     - bottles
     - openrgb
     - xpadneo-dkms
     - xone-dkms
+    - lib32-mesa
+    - lib32-vulkan-icd-loader
+    - lib32-vulkan-radeon
+    - lib32-vulkan-nouveau
+    - lib32-vulkan-intel
 
 - name: "Drivers NVIDIA Proprietários"
   description: "Driver nvidia-dkms para GPUs NVIDIA. Habilita aceleração completa e suporte a Wayland. Requires internet connection."
@@ -73,3 +78,26 @@
     - nvidia-utils
     - nvidia-settings
     - lib32-nvidia-utils
+
+- name: "Desenvolvimento"
+  description: "Ferramentas de desenvolvimento: compiladores, Python, Docker, editores. Requires internet connection."
+  hidden: false
+  selected: false
+  critical: false
+  packages:
+    - base-devel
+    - git
+    - python
+    - python-pip
+    - rustup
+    - go
+    - nodejs
+    - npm
+    - docker
+    - docker-compose
+    - podman-compose
+    - code
+    - meld
+    - github-cli
+    - jq
+    - httpie
