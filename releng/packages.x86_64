@@ -158,14 +158,12 @@ networkmanager
 gnome-text-editor
 eog
 calamares
-calamares-libs
 kpmcore
 python
-python-pyqt5
 python-yaml
 python-jsonschema
-qt5-svg
-qt5-webengine
+qt6-svg
+qt6-webengine
 ckbcomp
 hwinfo
 os-prober
@@ -184,7 +182,6 @@ gst-plugins-good
 gst-plugins-bad
 gst-plugins-ugly
 gst-libav
-libva-mesa-driver
 libvdpau-va-gl
 # firewall
 firewalld
