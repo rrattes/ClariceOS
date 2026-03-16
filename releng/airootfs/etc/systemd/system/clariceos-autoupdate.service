@@ -1,0 +1,12 @@
+[Unit]
+Description=ClariceOS Auto Update (pacman + AUR + Flatpak)
+Documentation=https://github.com/rrattes/ClariceOS
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/usr/bin/yay
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/clariceos-autoupdate
+StandardOutput=journal
+StandardError=journal

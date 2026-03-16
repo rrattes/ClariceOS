@@ -93,38 +93,65 @@ for home_dir in /home/*/; do
     echo ">>> Dracula theme applied for user: ${username}"
 done
 
-# ── Install pamac (AUR graphical package manager) ────────────────────────────
-echo ">>> Installing pamac-aur via yay..."
+# ── Chaotic-AUR setup (installed system) ─────────────────────────────────────
+# Chaotic-AUR provides pre-compiled AUR packages, eliminating the need to
+# build pamac-aur, limine-snapper-sync, openrgb, etc. from source.
+echo ">>> Configuring Chaotic-AUR on installed system..."
 
-install_pamac() {
-    # yay is in the extra repo and was installed as a live package.
-    # It is also included in packages.x86_64 so it ships in the installed system.
-    if ! command -v yay &>/dev/null; then
-        echo "    WARNING: yay not found — skipping pamac installation."
+setup_chaotic_aur() {
+    # Install keyring
+    if curl -fsSL "https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst" \
+            -o /tmp/chaotic-keyring.pkg.tar.zst 2>/dev/null; then
+        pacman-key --recv-key 3056513887B78AEB \
+            --keyserver keyserver.ubuntu.com 2>/dev/null || true
+        pacman-key --lsign-key 3056513887B78AEB 2>/dev/null || true
+        pacman -U --noconfirm /tmp/chaotic-keyring.pkg.tar.zst 2>/dev/null || true
+        rm -f /tmp/chaotic-keyring.pkg.tar.zst
+    else
+        echo "    WARNING: Chaotic-AUR keyring unavailable (no internet?). Skipping."
         return 1
     fi
 
-    # Find the first non-root user (the one created during installation)
-    local BUILD_USER
-    BUILD_USER=$(awk -F: '$3>=1000 && $3<65534 {print $1; exit}' /etc/passwd 2>/dev/null || true)
+    # Install mirrorlist
+    curl -fsSL "https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst" \
+        -o /tmp/chaotic-mirrorlist.pkg.tar.zst 2>/dev/null \
+        && pacman -U --noconfirm /tmp/chaotic-mirrorlist.pkg.tar.zst 2>/dev/null || true
+    rm -f /tmp/chaotic-mirrorlist.pkg.tar.zst
 
-    if [ -z "${BUILD_USER}" ]; then
-        echo "    WARNING: no non-root user found — cannot run yay as unprivileged user."
-        return 1
+    # Add repo to pacman.conf if not already present
+    if ! grep -q "chaotic-aur" /etc/pacman.conf; then
+        cat >> /etc/pacman.conf << 'CHAOTIC_CONF'
+
+# Chaotic-AUR — pre-compiled AUR packages
+[chaotic-aur]
+Include = /etc/pacman.d/chaotic-mirrorlist
+CHAOTIC_CONF
     fi
 
-    # Grant temporary NOPASSWD sudo so yay can call pacman
-    echo "${BUILD_USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/99-pamac-install
-
-    # Run yay as the target user
-    sudo -u "${BUILD_USER}" yay -S --noconfirm --needed pamac-aur 2>/dev/null \
-        && echo "    pamac-aur installed successfully." \
-        || { echo "    WARNING: pamac-aur installation failed."; rm -f /etc/sudoers.d/99-pamac-install; return 1; }
-
-    rm -f /etc/sudoers.d/99-pamac-install
+    pacman -Sy --noconfirm 2>/dev/null || true
+    echo "    Chaotic-AUR configured."
 }
 
-install_pamac || true
+setup_chaotic_aur || true
+
+# ── Install pamac from Chaotic-AUR (no build from source needed) ──────────────
+echo ">>> Installing pamac-aur..."
+if grep -q "chaotic-aur" /etc/pacman.conf 2>/dev/null; then
+    # Chaotic-AUR available — install directly via pacman
+    pacman -S --noconfirm --needed pamac-aur 2>/dev/null \
+        && echo "    pamac-aur installed from Chaotic-AUR." \
+        || echo "    WARNING: pamac-aur not found in Chaotic-AUR."
+else
+    # Fallback: build from AUR via yay
+    BUILD_USER_PAMAC=$(awk -F: '$3>=1000 && $3<65534 {print $1; exit}' /etc/passwd 2>/dev/null || true)
+    if [ -n "${BUILD_USER_PAMAC}" ] && command -v yay &>/dev/null; then
+        echo "${BUILD_USER_PAMAC} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/99-pamac-install
+        sudo -u "${BUILD_USER_PAMAC}" yay -S --noconfirm --needed pamac-aur 2>/dev/null \
+            && echo "    pamac-aur installed via yay." \
+            || echo "    WARNING: pamac-aur installation failed."
+        rm -f /etc/sudoers.d/99-pamac-install
+    fi
+fi
 
 # ── Flatpak + Flathub ─────────────────────────────────────────────────────────
 echo ">>> Configuring Flatpak + Flathub..."
@@ -135,6 +162,16 @@ if command -v flatpak &>/dev/null; then
         || echo "    WARNING: Flathub remote add failed (no internet?)."
 else
     echo "    WARNING: flatpak not found — skipping."
+fi
+
+# ── AppArmor ──────────────────────────────────────────────────────────────────
+echo ">>> Enabling AppArmor..."
+if command -v apparmor_status &>/dev/null || pacman -Q apparmor &>/dev/null 2>&1; then
+    systemctl enable apparmor.service 2>/dev/null \
+        && echo "    apparmor.service enabled." \
+        || echo "    WARNING: apparmor.service could not be enabled."
+else
+    echo "    AppArmor not installed — skipping."
 fi
 
 # ── GPU Driver Detection ───────────────────────────────────────────────────────

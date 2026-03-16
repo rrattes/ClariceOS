@@ -311,3 +311,34 @@ BREEZERC
 echo "    /etc/skel dotfiles written."
 
 echo "==> ClariceOS: Dracula theme configuration complete."
+
+# ── Chaotic-AUR setup (live ISO) ──────────────────────────────────────────────
+# Adds the Chaotic-AUR repository so pre-compiled AUR packages are available
+# in the live environment and in the installed system.
+echo "==> ClariceOS: configuring Chaotic-AUR..."
+
+if curl -fsSL "https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst" \
+        -o /tmp/chaotic-keyring.pkg.tar.zst 2>/dev/null; then
+    pacman-key --recv-key 3056513887B78AEB \
+        --keyserver keyserver.ubuntu.com 2>/dev/null || \
+    pacman-key --recv-key 3056513887B78AEB \
+        --keyserver hkps://keyserver.ubuntu.com 2>/dev/null || true
+    pacman-key --lsign-key 3056513887B78AEB 2>/dev/null || true
+    pacman -U --noconfirm /tmp/chaotic-keyring.pkg.tar.zst 2>/dev/null || true
+    rm -f /tmp/chaotic-keyring.pkg.tar.zst
+    echo "    Chaotic-AUR keyring installed."
+else
+    echo "    WARNING: Could not download chaotic-keyring (no internet?). Skipping."
+fi
+
+if curl -fsSL "https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst" \
+        -o /tmp/chaotic-mirrorlist.pkg.tar.zst 2>/dev/null; then
+    pacman -U --noconfirm /tmp/chaotic-mirrorlist.pkg.tar.zst 2>/dev/null || true
+    rm -f /tmp/chaotic-mirrorlist.pkg.tar.zst
+    echo "    Chaotic-AUR mirrorlist installed."
+fi
+
+# Sync chaotic-aur database (ignore errors if offline)
+pacman -Sy --noconfirm 2>/dev/null || true
+
+echo "==> ClariceOS: Chaotic-AUR configured."

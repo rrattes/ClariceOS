@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# ClariceOS Auto Update
+# Invoked by clariceos-autoupdate.timer (weekly, Sunday 03:00)
+# Updates: pacman system packages, AUR packages (via yay), Flatpak apps
+
+set -euo pipefail
+
+LOG="/var/log/clariceos-autoupdate.log"
+DATE=$(date '+%Y-%m-%d %H:%M:%S')
+
+log() { echo "[${DATE}] $*" | tee -a "${LOG}"; }
+
+log "==> ClariceOS Auto Update starting..."
+
+# ── pacman + AUR via yay ──────────────────────────────────────────────────────
+if command -v yay &>/dev/null; then
+    log "--> Updating system packages (pacman + AUR)..."
+    if sudo -n yay -Syu --noconfirm --noprogressbar 2>>"${LOG}"; then
+        log "    System packages updated."
+    else
+        log "    WARNING: yay update encountered errors (check log)."
+    fi
+else
+    log "    WARNING: yay not found — skipping pacman/AUR update."
+fi
+
+# ── Flatpak ───────────────────────────────────────────────────────────────────
+if command -v flatpak &>/dev/null; then
+    log "--> Updating Flatpak apps..."
+    if flatpak update -y --noninteractive 2>>"${LOG}"; then
+        log "    Flatpak apps updated."
+    else
+        log "    WARNING: flatpak update encountered errors (check log)."
+    fi
+fi
+
+log "==> ClariceOS Auto Update complete."
