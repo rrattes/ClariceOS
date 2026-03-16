@@ -1,0 +1,9 @@
+# ClariceOS system environment
+# Force Qt apps to use Wayland when running under a Wayland compositor
+QT_QPA_PLATFORM=wayland
+# Fallback to XCB if Wayland is unavailable (e.g. X11 session, SSH)
+QT_QPA_PLATFORM=wayland;xcb
+# Enable smooth scrolling in Qt apps
+QT_SCALE_FACTOR_ROUNDING_POLICY=PassThrough
+# Mozilla apps (Firefox, Thunderbird) native Wayland
+MOZ_ENABLE_WAYLAND=1

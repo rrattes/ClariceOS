@@ -1,3 +1,12 @@
+# audio — PipeWire stack (replaces ALSA-only)
+pipewire
+pipewire-alsa
+pipewire-pulse
+pipewire-jack
+wireplumber
+gst-plugin-pipewire
+bluez
+bluez-utils
 alsa-utils
 amd-ucode
 arch-install-scripts
@@ -160,3 +169,35 @@ limine
 snapper
 snap-pac
 yay
+# compressed swap (zRAM)
+zram-generator
+# flatpak
+flatpak
+# multimedia codecs
+gstreamer
+gst-plugins-base
+gst-plugins-good
+gst-plugins-bad
+gst-plugins-ugly
+gst-libav
+libva-mesa-driver
+libvdpau-va-gl
+# firewall
+firewalld
+# firmware updates
+fwupd
+# power management
+power-profiles-daemon
+# plymouth boot splash
+plymouth
+# wayland portals + Qt wayland
+xdg-desktop-portal
+xdg-desktop-portal-gnome
+xdg-desktop-portal-kde
+qt5-wayland
+qt6-wayland
+# containers
+distrobox
+podman
+# timeshift (snapshot for ext4)
+timeshift
