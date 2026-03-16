@@ -4,9 +4,9 @@
 
 set -euo pipefail
 
-WORK_DIR="${1:-/tmp/clariceos-work}"
-OUT_DIR="${2:-/tmp/clariceos-out}"
-LOCAL_REPO_DIR="${3:-/tmp/clariceos-local-repo}"
+WORK_DIR="${1:-/var/tmp/clariceos-work}"
+OUT_DIR="${2:-/var/tmp/clariceos-out}"
+LOCAL_REPO_DIR="${3:-/var/tmp/clariceos-local-repo}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [[ $EUID -ne 0 ]]; then
