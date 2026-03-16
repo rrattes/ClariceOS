@@ -13,7 +13,16 @@ ClariceOS é uma distribuição Linux baseada em Arch Linux, com foco em usabili
 - **Tema:** Dracula em GTK3, GTK4, GNOME Shell e KDE Plasma
 - **Sistema de arquivos:** ext4, btrfs, xfs, f2fs
 - **Gerenciador de pacotes:** pacman + yay (AUR) + pamac (GUI)
-- **Snapshots:** snapper + limine-snapper-sync (quando btrfs)
+- **Snapshots:** snapper + limine-snapper-sync (btrfs) / Timeshift rsync (ext4)
+- **Áudio:** PipeWire + WirePlumber (Bluetooth, JACK e PulseAudio compatíveis)
+- **Swap comprimida:** zRAM com ZSTD (até 4 GB, melhora performance com pouca RAM)
+- **Firewall:** firewalld ativo por padrão (zona public)
+- **Firmware:** fwupd para atualização de BIOS/SSD/periféricos
+- **Apps containerizados:** Flatpak + Flathub + Distrobox + Podman
+- **Gaming:** grupo opcional com Steam, Proton, MangoHUD, GameMode, Lutris
+- **GPU:** detecção automática de NVIDIA/AMD/Intel com instalação de drivers
+- **Boot splash:** Plymouth com tema bgrt
+- **Wayland:** portais XDG, Qt5/Qt6 Wayland, MOZ_ENABLE_WAYLAND
 
 ---
 

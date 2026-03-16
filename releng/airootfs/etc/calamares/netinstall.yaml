@@ -42,3 +42,31 @@
     - powerdevil
     - kde-gtk-config
     - breeze-gtk
+
+- name: "Gaming"
+  description: "Steam, Proton, MangoHUD, GameMode e ferramentas para jogos. Requires internet connection."
+  hidden: false
+  selected: false
+  critical: false
+  packages:
+    - steam
+    - lutris
+    - gamemode
+    - lib32-gamemode
+    - mangohud
+    - lib32-mangohud
+    - protonup-qt
+    - wine
+    - winetricks
+    - bottles
+
+- name: "Drivers NVIDIA Proprietários"
+  description: "Driver nvidia-dkms para GPUs NVIDIA. Habilita aceleração completa e suporte a Wayland. Requires internet connection."
+  hidden: false
+  selected: false
+  critical: false
+  packages:
+    - nvidia-dkms
+    - nvidia-utils
+    - nvidia-settings
+    - lib32-nvidia-utils
