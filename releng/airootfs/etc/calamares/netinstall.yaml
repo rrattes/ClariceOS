@@ -1,0 +1,44 @@
+---
+# Desktop Environment selection for ClariceOS installer.
+#
+# GNOME: pre-installed in the live image — works fully offline.
+# KDE Plasma: downloaded during installation — requires internet connection.
+#
+# Select only ONE desktop environment.
+
+- name: "GNOME"
+  description: "GNOME Desktop — modern, clean, and user-friendly. Pre-installed, no download required."
+  hidden: false
+  selected: true
+  critical: false
+  packages:
+    - gnome
+    - gnome-extra
+    - gdm
+    - nautilus
+    - gnome-terminal
+    - gnome-text-editor
+    - eog
+
+- name: "KDE Plasma"
+  description: "KDE Plasma Desktop — highly customizable and feature-rich. Requires internet connection."
+  hidden: false
+  selected: false
+  critical: false
+  packages:
+    - plasma-meta
+    - plasma-nm
+    - plasma-pa
+    - sddm
+    - sddm-kcm
+    - dolphin
+    - konsole
+    - kate
+    - gwenview
+    - okular
+    - spectacle
+    - kscreen
+    - bluedevil
+    - powerdevil
+    - kde-gtk-config
+    - breeze-gtk

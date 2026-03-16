@@ -1,0 +1,13 @@
+# This hook removes the archiso mkinitcpio fragment when mkinitcpio-archiso
+# is uninstalled by Calamares in the target system. Without this, the
+# /etc/mkinitcpio.conf.d/archiso.conf fragment would cause mkinitcpio -P
+# to fail on the installed system (archiso hooks are not present on disk).
+[Trigger]
+Operation = Remove
+Type = Package
+Target = mkinitcpio-archiso
+
+[Action]
+Description = Removing archiso mkinitcpio configuration fragment...
+When = PostTransaction
+Exec = /bin/rm -f /etc/mkinitcpio.conf.d/archiso.conf

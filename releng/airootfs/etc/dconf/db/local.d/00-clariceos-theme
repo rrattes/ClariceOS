@@ -1,0 +1,13 @@
+[org/gnome/desktop/interface]
+gtk-theme='Dracula'
+icon-theme='Adwaita'
+cursor-theme='Dracula-cursors'
+color-scheme='prefer-dark'
+font-name='Cantarell 11'
+
+[org/gnome/desktop/wm/preferences]
+theme='Dracula'
+button-layout=':minimize,maximize,close'
+
+[org/gnome/shell/extensions/user-theme]
+name='Dracula'
