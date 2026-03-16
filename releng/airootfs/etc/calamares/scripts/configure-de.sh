@@ -82,7 +82,7 @@ for home_dir in /home/*/; do
 
     # KDE dotfiles (kdeglobals, plasmarc, kwinrc)
     if $KDE_INSTALLED; then
-        for conf in kdeglobals plasmarc kwinrc; do
+        for conf in kdeglobals plasmarc kwinrc breezerc; do
             [ -f "${home_dir}.config/${conf}" ] || \
                 cp "/etc/skel/.config/${conf}" "${home_dir}.config/" 2>/dev/null || true
         done

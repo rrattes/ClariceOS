@@ -116,6 +116,10 @@ if ${UEFI}; then
     fi
 else
     # BIOS: write Limine to the MBR of the target disk
+    if [ -z "${DISK}" ]; then
+        echo "ERROR: could not determine target disk — cannot install Limine (BIOS)."
+        exit 1
+    fi
     limine bios-install "/dev/${DISK}"
     cp /usr/share/limine/limine-bios.sys /boot/
     echo "    Limine installed to MBR of /dev/${DISK}."
