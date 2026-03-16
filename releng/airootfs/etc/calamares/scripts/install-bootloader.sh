@@ -150,7 +150,9 @@ if ${UEFI}; then
 
     # Register a firmware boot entry via efibootmgr
     if command -v efibootmgr &>/dev/null && [ -n "${DISK}" ]; then
-        EFI_PART_NUM=$(lsblk -no PARTN "$(findmnt -n -o SOURCE /boot/efi)" 2>/dev/null || echo "1")
+        # Use the actual ESP device found by detect_esp() — not the hardcoded /boot/efi.
+        EFI_PART_NUM=$(lsblk -no PARTN "$(findmnt -n -o SOURCE "${ESP}")" 2>/dev/null | head -1 || echo "1")
+        [ -z "${EFI_PART_NUM}" ] && EFI_PART_NUM="1"
         efibootmgr --create \
             --disk "/dev/${DISK}" \
             --part "${EFI_PART_NUM}" \
@@ -216,6 +218,8 @@ install_limine_snapper_sync() {
 
     local BUILD_DIR
     BUILD_DIR=$(mktemp -d)
+    # Ensure BUILD_DIR and the _build user are always cleaned up, even on error.
+    trap "rm -rf '${BUILD_DIR}'; rm -f /etc/sudoers.d/99-build-user; userdel -r _build 2>/dev/null || true" RETURN
     chown -R _build:_build "${BUILD_DIR}"
 
     sudo -u _build bash -c "
@@ -224,11 +228,6 @@ install_limine_snapper_sync() {
         makepkg -si --noconfirm
     " && echo "    limine-snapper-sync installed from AUR." \
       || { echo "    WARNING: AUR build failed."; return 1; }
-
-    # Cleanup
-    rm -f /etc/sudoers.d/99-build-user
-    userdel -r _build 2>/dev/null || true
-    rm -rf "${BUILD_DIR}"
 }
 
 if pacman -Q limine-snapper-sync &>/dev/null 2>&1; then
