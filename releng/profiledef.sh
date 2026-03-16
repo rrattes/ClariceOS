@@ -30,6 +30,8 @@ file_permissions=(
   ["/etc/calamares/branding"]="0:0:755"
   ["/etc/calamares/branding/clariceos"]="0:0:755"
   ["/etc/calamares/modules"]="0:0:755"
+  ["/etc/calamares/scripts"]="0:0:755"
+  ["/etc/calamares/scripts/configure-de.sh"]="0:0:755"
   ["/etc/xdg/autostart/calamares.desktop"]="0:0:644"
   ["/usr/share/applications/calamares.desktop"]="0:0:644"
 )
