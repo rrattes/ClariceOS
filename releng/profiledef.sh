@@ -39,6 +39,7 @@ file_permissions=(
   ["/usr/local/bin/clariceos-autoupdate"]="0:0:755"
   ["/usr/local/bin/clariceos-hwdetect"]="0:0:755"
   ["/etc/skel/.config/autostart/clariceos-welcome.desktop"]="0:0:644"
+  ["/etc/skel/.config/kitty/kitty.conf"]="0:0:644"
   ["/etc/environment"]="0:0:644"
   ["/etc/systemd/zram-generator.conf"]="0:0:644"
   ["/etc/plymouth/plymouthd.conf"]="0:0:644"

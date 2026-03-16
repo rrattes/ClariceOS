@@ -7,3 +7,5 @@ QT_QPA_PLATFORM=wayland;xcb
 QT_SCALE_FACTOR_ROUNDING_POLICY=PassThrough
 # Mozilla apps (Firefox, Thunderbird) native Wayland
 MOZ_ENABLE_WAYLAND=1
+# Default terminal emulator
+TERMINAL=kitty

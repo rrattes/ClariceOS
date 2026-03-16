@@ -176,14 +176,21 @@ gtk-theme='Dracula'
 icon-theme='Adwaita'
 cursor-theme='Dracula-cursors'
 color-scheme='prefer-dark'
-font-name='Cantarell 11'
+font-name='JetBrains Mono 11'
+monospace-font-name='JetBrains Mono 11'
+document-font-name='JetBrains Mono 11'
 
 [org/gnome/desktop/wm/preferences]
 theme='Dracula'
 button-layout=':minimize,maximize,close'
+titlebar-font='JetBrains Mono Bold 11'
 
 [org/gnome/shell/extensions/user-theme]
 name='Dracula'
+
+[org/gnome/desktop/default-applications/terminal]
+exec='kitty'
+exec-arg=''
 DCONF
 
 dconf update && echo "    dconf database compiled."
@@ -195,10 +202,14 @@ cat > /root/.config/gtk-3.0/settings.ini << 'GTK'
 gtk-theme-name=Dracula
 gtk-icon-theme-name=Adwaita
 gtk-cursor-theme-name=Dracula-cursors
-gtk-font-name=Cantarell 11
+gtk-font-name=JetBrains Mono 11
 gtk-application-prefer-dark-theme=true
 GTK
 cp /root/.config/gtk-3.0/settings.ini /root/.config/gtk-4.0/settings.ini
+
+# ── Kitty config (root — live session) ───────────────────────────────────────
+mkdir -p /root/.config/kitty
+cp /etc/skel/.config/kitty/kitty.conf /root/.config/kitty/kitty.conf
 
 # ── /etc/skel dotfiles (copied to every new user by Calamares) ───────────────
 mkdir -p /etc/skel/.config/gtk-3.0 /etc/skel/.config/gtk-4.0
@@ -213,6 +224,14 @@ cat > /etc/skel/.config/kdeglobals << 'KDEGLOBALS'
 ColorScheme=Dracula
 Name=Dracula
 shadeSortColumn=true
+font=JetBrains Mono,11,-1,5,50,0,0,0,0,0
+fixed=JetBrains Mono,11,-1,5,50,0,0,0,0,0
+smallestReadableFont=JetBrains Mono,8,-1,5,50,0,0,0,0,0
+toolBarFont=JetBrains Mono,10,-1,5,50,0,0,0,0,0
+menuFont=JetBrains Mono,11,-1,5,50,0,0,0,0,0
+activeFont=JetBrains Mono,11,-1,5,75,0,0,0,0,0
+TerminalApplication=kitty
+TerminalService=kitty.desktop
 
 [KDE]
 ColorScheme=Dracula

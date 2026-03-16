@@ -2,6 +2,14 @@
 ColorScheme=Dracula
 Name=Dracula
 shadeSortColumn=true
+font=JetBrains Mono,11,-1,5,50,0,0,0,0,0
+fixed=JetBrains Mono,11,-1,5,50,0,0,0,0,0
+smallestReadableFont=JetBrains Mono,8,-1,5,50,0,0,0,0,0
+toolBarFont=JetBrains Mono,10,-1,5,50,0,0,0,0,0
+menuFont=JetBrains Mono,11,-1,5,50,0,0,0,0,0
+activeFont=JetBrains Mono,11,-1,5,75,0,0,0,0,0
+TerminalApplication=kitty
+TerminalService=kitty.desktop
 
 [KDE]
 ColorScheme=Dracula

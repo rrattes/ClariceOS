@@ -57,7 +57,37 @@ else
     echo "WARNING: No desktop environment detected. Skipping DM configuration."
 fi
 
-# ── Compile dconf database ────────────────────────────────────────────────────
+# ── Compile dconf database (includes font + terminal overrides) ───────────────
+# Ensure the dconf override file has JetBrains Mono and kitty terminal settings.
+mkdir -p /etc/dconf/db/local.d /etc/dconf/profile
+cat > /etc/dconf/profile/user << 'PROFILE'
+user-db:user
+system-db:local
+PROFILE
+
+cat > /etc/dconf/db/local.d/00-clariceos-theme << 'DCONF'
+[org/gnome/desktop/interface]
+gtk-theme='Dracula'
+icon-theme='Adwaita'
+cursor-theme='Dracula-cursors'
+color-scheme='prefer-dark'
+font-name='JetBrains Mono 11'
+monospace-font-name='JetBrains Mono 11'
+document-font-name='JetBrains Mono 11'
+
+[org/gnome/desktop/wm/preferences]
+theme='Dracula'
+button-layout=':minimize,maximize,close'
+titlebar-font='JetBrains Mono Bold 11'
+
+[org/gnome/shell/extensions/user-theme]
+name='Dracula'
+
+[org/gnome/desktop/default-applications/terminal]
+exec='kitty'
+exec-arg=''
+DCONF
+
 if command -v dconf &>/dev/null; then
     dconf update 2>/dev/null && echo ">>> dconf database updated." || true
 fi
@@ -79,6 +109,11 @@ for home_dir in /home/*/; do
     mkdir -p "${home_dir}.config/gtk-4.0"
     [ -f "${home_dir}.config/gtk-4.0/settings.ini" ] || \
         cp /etc/skel/.config/gtk-4.0/settings.ini "${home_dir}.config/gtk-4.0/" 2>/dev/null || true
+
+    # Kitty config
+    mkdir -p "${home_dir}.config/kitty"
+    [ -f "${home_dir}.config/kitty/kitty.conf" ] || \
+        cp /etc/skel/.config/kitty/kitty.conf "${home_dir}.config/kitty/" 2>/dev/null || true
 
     # KDE dotfiles (kdeglobals, plasmarc, kwinrc)
     if $KDE_INSTALLED; then

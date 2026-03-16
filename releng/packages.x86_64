@@ -53,7 +53,7 @@ irssi
 iw
 iwd
 jfsutils
-kitty-terminfo
+kitty
 ldns
 less
 lftp
@@ -214,6 +214,7 @@ noto-fonts
 noto-fonts-emoji
 ttf-liberation
 ttf-dejavu
+ttf-jetbrains-mono-nerd
 # printing support (CUPS)
 cups
 cups-pdf
