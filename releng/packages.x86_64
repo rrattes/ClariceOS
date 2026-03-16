@@ -29,6 +29,7 @@ dhcpcd
 diffutils
 dmidecode
 dmraid
+pciutils
 dnsmasq
 dosfstools
 e2fsprogs
