@@ -1,0 +1,28 @@
+---
+componentName: clariceos
+
+strings:
+  productName:         "Clarice OS"
+  shortProductName:    "ClariceOS"
+  version:             ""
+  shortVersion:        ""
+  versionedName:       "Clarice OS"
+  shortVersionedName:  "ClariceOS"
+  bootloaderEntryName: "ClariceOS"
+  productUrl:          "https://ClariceOS.org/"
+  supportUrl:          "https://ClariceOS.org/support/"
+  knownIssuesUrl:      "https://github.com/rrattes/ClariceOS/issues"
+  releaseNotesUrl:     "about:blank"
+
+images:
+  productLogo:    "logo.png"
+  productIcon:    "logo.png"
+  productWelcome: "welcome.png"
+
+slideshow: "show.qml"
+
+style:
+  sidebarBackground:    "#1a1a2e"
+  sidebarText:          "#ffffff"
+  sidebarTextSelect:    "#97d3e8"
+  sidebarTextHighlight: "#17939d"

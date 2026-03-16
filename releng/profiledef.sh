@@ -25,4 +25,11 @@ file_permissions=(
   ["/usr/local/bin/choose-mirror"]="0:0:755"
   ["/usr/local/bin/Installation_guide"]="0:0:755"
   ["/usr/local/bin/livecd-sound"]="0:0:755"
+  ["/etc/calamares"]="0:0:755"
+  ["/etc/calamares/settings.conf"]="0:0:644"
+  ["/etc/calamares/branding"]="0:0:755"
+  ["/etc/calamares/branding/clariceos"]="0:0:755"
+  ["/etc/calamares/modules"]="0:0:755"
+  ["/etc/xdg/autostart/calamares.desktop"]="0:0:644"
+  ["/usr/share/applications/calamares.desktop"]="0:0:644"
 )
