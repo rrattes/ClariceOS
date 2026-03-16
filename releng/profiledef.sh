@@ -35,6 +35,7 @@ file_permissions=(
   ["/etc/calamares/scripts/install-bootloader.sh"]="0:0:755"
   ["/etc/calamares/scripts/btrfs-hooks.sh"]="0:0:755"
   ["/etc/calamares/scripts/setup-secureboot.sh"]="0:0:755"
+  ["/etc/calamares/scripts/remove-live-pkgs.sh"]="0:0:755"
   ["/usr/local/bin/clariceos-welcome"]="0:0:755"
   ["/usr/local/bin/clariceos-autoupdate"]="0:0:755"
   ["/usr/local/bin/clariceos-hwdetect"]="0:0:755"
