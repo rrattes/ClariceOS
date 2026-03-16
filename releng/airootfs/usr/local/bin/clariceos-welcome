@@ -9,6 +9,11 @@ ICON_INFO="dialog-information"
 ICON_WARN="dialog-warning"
 ICON_OK="dialog-ok"
 
+# Do not run inside the live ISO — check both the archiso kernel cmdline marker
+# and the sentinel file (belt-and-suspenders: sentinel may not exist if home
+# directory setup was interrupted, but the cmdline check is always reliable).
+grep -q 'archisolabel\|archiso_label\|cow_spacesize' /proc/cmdline 2>/dev/null && exit 0
+
 # Only run once
 [ -f "${SENTINEL}" ] && exit 0
 

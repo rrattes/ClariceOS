@@ -48,4 +48,5 @@ file_permissions=(
   ["/usr/share/plymouth/themes/clariceos/clariceos.plymouth"]="0:0:644"
   ["/usr/share/plymouth/themes/clariceos/clariceos.script"]="0:0:644"
   ["/etc/xdg/autostart/calamares.desktop"]="0:0:644"
+  ["/etc/pam.d/gdm-autologin"]="0:0:644"
 )
