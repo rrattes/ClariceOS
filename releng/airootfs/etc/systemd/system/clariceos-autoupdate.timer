@@ -1,0 +1,12 @@
+[Unit]
+Description=ClariceOS Weekly Auto Update
+Documentation=https://github.com/rrattes/ClariceOS
+
+[Timer]
+# Run once a week, on Sunday at 03:00, only if on AC power
+OnCalendar=Sun 03:00
+Persistent=true
+RandomizedDelaySec=30min
+
+[Install]
+WantedBy=timers.target

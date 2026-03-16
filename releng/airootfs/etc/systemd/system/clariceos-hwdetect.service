@@ -1,0 +1,15 @@
+[Unit]
+Description=ClariceOS Hardware Detection (first boot)
+Documentation=https://github.com/rrattes/ClariceOS
+After=multi-user.target
+ConditionPathExists=!/var/log/clariceos-hardware.log
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/clariceos-hwdetect
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

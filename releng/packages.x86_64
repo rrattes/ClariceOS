@@ -138,7 +138,6 @@ zsh
 xorg
 xorg-server
 firefox
-zsh
 gdm
 gnome
 thunar
@@ -210,3 +209,25 @@ apparmor
 sbctl
 # yad — GTK dialog tool (welcome wizard)
 yad
+# font rendering
+noto-fonts
+noto-fonts-emoji
+ttf-liberation
+ttf-dejavu
+# printing support (CUPS)
+cups
+cups-pdf
+system-config-printer
+# hardware detection helpers
+inxi
+lshw
+usbutils
+# NetworkManager extras
+nm-connection-editor
+network-manager-applet
+# GTK theming tools
+lxappearance
+# git (needed by yay AUR helper)
+git
+# base-devel (needed to build AUR packages)
+base-devel
