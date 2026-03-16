@@ -2,7 +2,7 @@
 # ClariceOS — post-install desktop environment + theme configuration
 # Runs inside the chroot of the newly installed system via Calamares shellprocess.
 
-set -e
+set -euo pipefail
 
 GNOME_INSTALLED=false
 KDE_INSTALLED=false
@@ -262,9 +262,11 @@ BUILD_USER_GPU=$(awk -F: '$3>=1000 && $3<65534 {print $1; exit}' /etc/passwd 2>/
 
 install_gpu_drivers() {
     local has_nvidia has_amd has_intel
-    has_nvidia=$(lspci 2>/dev/null | grep -ci "NVIDIA" || true)
-    has_amd=$(lspci 2>/dev/null | grep -ciE "AMD/ATI|Radeon" || true)
-    has_intel=$(lspci 2>/dev/null | grep -ci "Intel.*Graphics" || true)
+    # Use || echo 0 so the variable is always a valid integer even if lspci
+    # is unavailable (pciutils not installed) or if pipefail is active.
+    has_nvidia=$(lspci 2>/dev/null | grep -ci "NVIDIA" || echo 0)
+    has_amd=$(lspci 2>/dev/null | grep -ciE "AMD/ATI|Radeon" || echo 0)
+    has_intel=$(lspci 2>/dev/null | grep -ci "Intel.*Graphics" || echo 0)
 
     # NVIDIA — proprietary driver via yay (supports all current cards)
     if [ "${has_nvidia}" -gt 0 ]; then

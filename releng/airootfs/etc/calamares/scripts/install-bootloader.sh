@@ -44,7 +44,8 @@ CMDLINE="root=UUID=${ROOT_UUID} rw quiet splash lsm=landlock,lockdown,yama,integ
 
 if ${BTRFS}; then
     # Extract the subvolume from current mount options (set by Calamares fstab)
-    BTRFS_SUBVOL=$(findmnt -n -o OPTIONS / | grep -oP 'subvol=\K[^,]+' || true)
+    # Uses POSIX grep+sed instead of grep -P (Perl regex) for portability.
+    BTRFS_SUBVOL=$(findmnt -n -o OPTIONS / | grep -o 'subvol=[^,]*' | sed 's/subvol=//' || true)
     [ -z "${BTRFS_SUBVOL}" ] && BTRFS_SUBVOL="@"
     CMDLINE="${CMDLINE} rootflags=subvol=${BTRFS_SUBVOL}"
     echo "    btrfs subvol: ${BTRFS_SUBVOL}"
@@ -110,8 +111,22 @@ CFG_ZEN
     echo "    limine.cfg written → ${cfg_path}"
 }
 
+# Detect ESP mount point: try /boot/efi, /boot, /efi in order.
+detect_esp() {
+    for mp in /boot/efi /boot /efi; do
+        local t
+        t=$(findmnt -n -o TARGET "${mp}" 2>/dev/null)
+        if [ -n "${t}" ] && mountpoint -q "${t}"; then
+            echo "${t}"
+            return 0
+        fi
+    done
+    echo "/boot/efi"   # fallback — should not normally be reached on UEFI
+}
+
 if ${UEFI}; then
-    ESP=$(findmnt -n -o TARGET /boot/efi 2>/dev/null || echo "/boot/efi")
+    ESP=$(detect_esp)
+    echo "    ESP detected at: ${ESP}"
     K_PREFIX="uuid://${ROOT_UUID}/boot"
     write_limine_cfg "${ESP}/limine.cfg"        "${K_PREFIX}" "${K_PREFIX}"
     write_limine_cfg "/boot/limine.cfg"          "${K_PREFIX}" "${K_PREFIX}"
@@ -122,7 +137,7 @@ fi
 # ── Install Limine ────────────────────────────────────────────────────────────
 
 if ${UEFI}; then
-    ESP=$(findmnt -n -o TARGET /boot/efi 2>/dev/null || echo "/boot/efi")
+    ESP=$(detect_esp)
 
     mkdir -p "${ESP}/EFI/limine" "${ESP}/EFI/BOOT"
 
@@ -227,7 +242,7 @@ if pacman -Q limine-snapper-sync &>/dev/null 2>&1; then
     # Configure the path to limine.cfg (differs for UEFI vs BIOS)
     mkdir -p /etc/limine-snapper-sync
     if ${UEFI}; then
-        ESP=$(findmnt -n -o TARGET /boot/efi 2>/dev/null || echo "/boot/efi")
+        ESP=$(detect_esp)
         cat > /etc/limine-snapper-sync/config << LSS_CONF
 LIMINE_CFG="${ESP}/limine.cfg"
 LIMINE_BIOS_INSTALL=""

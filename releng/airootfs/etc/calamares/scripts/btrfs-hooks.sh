@@ -23,13 +23,13 @@ if [ ! -f "${MKINITCPIO_CONF}" ]; then
 fi
 
 # Check if btrfs hook is already present
-if grep -qP '^HOOKS=.*\bbtrfs\b' "${MKINITCPIO_CONF}"; then
+if grep -qE '^HOOKS=.*\bbtrfs\b' "${MKINITCPIO_CONF}"; then
     echo "    btrfs hook already present — nothing to do."
     exit 0
 fi
 
 # Insert 'btrfs' before 'filesystems' in the HOOKS line
-if grep -qP '^HOOKS=' "${MKINITCPIO_CONF}"; then
+if grep -q '^HOOKS=' "${MKINITCPIO_CONF}"; then
     sed -i 's/\(HOOKS=.*\)\bfilesystems\b/\1btrfs filesystems/' "${MKINITCPIO_CONF}"
     echo "    btrfs hook injected before filesystems."
 else
