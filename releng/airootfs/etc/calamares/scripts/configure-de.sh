@@ -57,7 +57,37 @@ else
     echo "WARNING: No desktop environment detected. Skipping DM configuration."
 fi
 
-# ── Compile dconf database ────────────────────────────────────────────────────
+# ── Compile dconf database (includes font + terminal overrides) ───────────────
+# Ensure the dconf override file has JetBrains Mono and kitty terminal settings.
+mkdir -p /etc/dconf/db/local.d /etc/dconf/profile
+cat > /etc/dconf/profile/user << 'PROFILE'
+user-db:user
+system-db:local
+PROFILE
+
+cat > /etc/dconf/db/local.d/00-clariceos-theme << 'DCONF'
+[org/gnome/desktop/interface]
+gtk-theme='Dracula'
+icon-theme='Adwaita'
+cursor-theme='Dracula-cursors'
+color-scheme='prefer-dark'
+font-name='JetBrains Mono 11'
+monospace-font-name='JetBrains Mono 11'
+document-font-name='JetBrains Mono 11'
+
+[org/gnome/desktop/wm/preferences]
+theme='Dracula'
+button-layout=':minimize,maximize,close'
+titlebar-font='JetBrains Mono Bold 11'
+
+[org/gnome/shell/extensions/user-theme]
+name='Dracula'
+
+[org/gnome/desktop/default-applications/terminal]
+exec='kitty'
+exec-arg=''
+DCONF
+
 if command -v dconf &>/dev/null; then
     dconf update 2>/dev/null && echo ">>> dconf database updated." || true
 fi
@@ -80,6 +110,19 @@ for home_dir in /home/*/; do
     [ -f "${home_dir}.config/gtk-4.0/settings.ini" ] || \
         cp /etc/skel/.config/gtk-4.0/settings.ini "${home_dir}.config/gtk-4.0/" 2>/dev/null || true
 
+    # Kitty config
+    mkdir -p "${home_dir}.config/kitty"
+    [ -f "${home_dir}.config/kitty/kitty.conf" ] || \
+        cp /etc/skel/.config/kitty/kitty.conf "${home_dir}.config/kitty/" 2>/dev/null || true
+
+    # Zsh config
+    [ -f "${home_dir}.zshrc" ] || \
+        cp /etc/skel/.zshrc "${home_dir}.zshrc" 2>/dev/null || true
+
+    # Starship prompt config
+    [ -f "${home_dir}.config/starship.toml" ] || \
+        cp /etc/skel/.config/starship.toml "${home_dir}.config/starship.toml" 2>/dev/null || true
+
     # KDE dotfiles (kdeglobals, plasmarc, kwinrc)
     if $KDE_INSTALLED; then
         for conf in kdeglobals plasmarc kwinrc breezerc; do
@@ -88,10 +131,31 @@ for home_dir in /home/*/; do
         done
     fi
 
+    # Set zsh as the login shell for this user
+    if command -v zsh &>/dev/null; then
+        ZSH_PATH="$(command -v zsh)"
+        # Ensure zsh is listed in /etc/shells
+        grep -qxF "${ZSH_PATH}" /etc/shells || echo "${ZSH_PATH}" >> /etc/shells
+        chsh -s "${ZSH_PATH}" "${username}" 2>/dev/null \
+            && echo "    Shell set to zsh for: ${username}" || true
+    fi
+
     # Fix ownership
-    chown -R "${username}:${username}" "${home_dir}.config/" 2>/dev/null || true
-    echo ">>> Dracula theme applied for user: ${username}"
+    chown -R "${username}:${username}" "${home_dir}.config/" "${home_dir}.zshrc" 2>/dev/null || true
+    echo ">>> Dracula theme + zsh applied for user: ${username}"
 done
+
+# ── Set zsh as default shell for root in installed system ─────────────────────
+if command -v zsh &>/dev/null; then
+    ZSH_PATH="$(command -v zsh)"
+    grep -qxF "${ZSH_PATH}" /etc/shells || echo "${ZSH_PATH}" >> /etc/shells
+    chsh -s "${ZSH_PATH}" root 2>/dev/null && echo ">>> root shell set to zsh." || true
+    # Copy zsh + starship configs for root
+    mkdir -p /root/.config
+    [ -f /root/.zshrc ] || cp /etc/skel/.zshrc /root/.zshrc 2>/dev/null || true
+    [ -f /root/.config/starship.toml ] || \
+        cp /etc/skel/.config/starship.toml /root/.config/starship.toml 2>/dev/null || true
+fi
 
 # ── Chaotic-AUR setup (installed system) ─────────────────────────────────────
 # Chaotic-AUR provides pre-compiled AUR packages, eliminating the need to
@@ -231,6 +295,101 @@ install_gpu_drivers() {
 }
 
 install_gpu_drivers || true
+
+# ── Plymouth Dracula theme — deploy to installed system ───────────────────────
+echo ">>> Installing ClariceOS Plymouth theme..."
+if command -v plymouth &>/dev/null; then
+    PLYDIR="/usr/share/plymouth/themes/clariceos"
+    mkdir -p "${PLYDIR}"
+
+    # Theme descriptor
+    cat > "${PLYDIR}/clariceos.plymouth" << 'PLYDESC'
+[Plymouth Theme]
+Name=ClariceOS
+Description=ClariceOS — Dracula boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/clariceos
+ScriptFile=/usr/share/plymouth/themes/clariceos/clariceos.script
+PLYDESC
+
+    # Plymouth script
+    cat > "${PLYDIR}/clariceos.script" << 'PLYSCRIPT'
+// ClariceOS Plymouth Theme — Dracula colour palette
+width  = Window.GetWidth();
+height = Window.GetHeight();
+
+bg     = Image("background.png");
+bg     = bg.Scale(width, height);
+bg_spr = Sprite(bg);
+bg_spr.SetZ(-100);
+
+title     = Image.Text("ClariceOS", 0.973, 0.973, 0.898, 1, "Sans Bold 28");
+title_spr = Sprite(title);
+title_spr.SetX(Math.Int(width  / 2 - title.GetWidth()  / 2));
+title_spr.SetY(Math.Int(height / 2 - title.GetHeight() / 2 - 40));
+
+bar_w = Math.Int(width * 0.50);
+bar_h = 4;
+bar_x = Math.Int((width - bar_w) / 2);
+bar_y = Math.Int(height * 0.67);
+
+track     = Image("progress-bg.png").Scale(bar_w, bar_h);
+track_spr = Sprite(track);
+track_spr.SetX(bar_x);
+track_spr.SetY(bar_y);
+track_spr.SetZ(0);
+
+fill_spr = Sprite();
+fill_spr.SetX(bar_x);
+fill_spr.SetY(bar_y);
+fill_spr.SetZ(1);
+
+fun boot_progress_callback(time, progress) {
+    w = Math.Int(bar_w * progress);
+    if (w < 1) w = 1;
+    fill_spr.SetImage(Image("progress.png").Scale(w, bar_h));
+}
+Plymouth.SetBootProgressFunction(boot_progress_callback);
+
+msg_spr = Sprite();
+fun message_callback(text) {
+    img = Image.Text(text, 0.973, 0.973, 0.898, 0.65, "Sans 10");
+    msg_spr.SetImage(img);
+    msg_spr.SetX(Math.Int(width / 2 - img.GetWidth() / 2));
+    msg_spr.SetY(bar_y + bar_h + 12);
+}
+Plymouth.SetMessageFunction(message_callback);
+PLYSCRIPT
+
+    # Generate 1×1 PNG colour swatches using Python3 stdlib (no Pillow needed)
+    python3 << 'PYEOF'
+import struct, zlib, os
+
+def make_png_1x1(r, g, b, path):
+    def chunk(tag, data):
+        buf = tag + data
+        return (struct.pack('>I', len(data)) + buf +
+                struct.pack('>I', zlib.crc32(buf) & 0xFFFFFFFF))
+    ihdr = chunk(b'IHDR', struct.pack('>IIBBBBB', 1, 1, 8, 2, 0, 0, 0))
+    idat = chunk(b'IDAT', zlib.compress(bytes([0, r, g, b]), 9))
+    iend = chunk(b'IEND', b'')
+    with open(path, 'wb') as fh:
+        fh.write(b'\x89PNG\r\n\x1a\n' + ihdr + idat + iend)
+
+base = '/usr/share/plymouth/themes/clariceos'
+make_png_1x1( 40,  42,  54, os.path.join(base, 'background.png'))
+make_png_1x1(189, 147, 249, os.path.join(base, 'progress.png'))
+make_png_1x1( 68,  71,  90, os.path.join(base, 'progress-bg.png'))
+PYEOF
+
+    plymouth-set-default-theme clariceos 2>/dev/null \
+        && echo "    Plymouth theme set to: clariceos" \
+        || echo "    WARNING: plymouth-set-default-theme failed; plymouthd.conf already specifies clariceos."
+else
+    echo "    Plymouth not installed — skipping theme deployment."
+fi
 
 # ── Plymouth mkinitcpio hook ───────────────────────────────────────────────────
 echo ">>> Configuring Plymouth boot splash..."

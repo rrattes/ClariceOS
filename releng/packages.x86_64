@@ -53,7 +53,7 @@ irssi
 iw
 iwd
 jfsutils
-kitty-terminfo
+kitty
 ldns
 less
 lftp
@@ -135,6 +135,11 @@ wvdial
 xfsprogs
 xl2tpd
 zsh
+zsh-autosuggestions
+zsh-syntax-highlighting
+zsh-history-substring-search
+zsh-completions
+starship
 xorg
 xorg-server
 firefox
@@ -214,6 +219,7 @@ noto-fonts
 noto-fonts-emoji
 ttf-liberation
 ttf-dejavu
+ttf-jetbrains-mono-nerd
 # printing support (CUPS)
 cups
 cups-pdf

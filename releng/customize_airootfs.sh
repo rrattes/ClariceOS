@@ -176,14 +176,21 @@ gtk-theme='Dracula'
 icon-theme='Adwaita'
 cursor-theme='Dracula-cursors'
 color-scheme='prefer-dark'
-font-name='Cantarell 11'
+font-name='JetBrains Mono 11'
+monospace-font-name='JetBrains Mono 11'
+document-font-name='JetBrains Mono 11'
 
 [org/gnome/desktop/wm/preferences]
 theme='Dracula'
 button-layout=':minimize,maximize,close'
+titlebar-font='JetBrains Mono Bold 11'
 
 [org/gnome/shell/extensions/user-theme]
 name='Dracula'
+
+[org/gnome/desktop/default-applications/terminal]
+exec='kitty'
+exec-arg=''
 DCONF
 
 dconf update && echo "    dconf database compiled."
@@ -195,10 +202,23 @@ cat > /root/.config/gtk-3.0/settings.ini << 'GTK'
 gtk-theme-name=Dracula
 gtk-icon-theme-name=Adwaita
 gtk-cursor-theme-name=Dracula-cursors
-gtk-font-name=Cantarell 11
+gtk-font-name=JetBrains Mono 11
 gtk-application-prefer-dark-theme=true
 GTK
 cp /root/.config/gtk-3.0/settings.ini /root/.config/gtk-4.0/settings.ini
+
+# ── Kitty config (root — live session) ───────────────────────────────────────
+mkdir -p /root/.config/kitty
+cp /etc/skel/.config/kitty/kitty.conf /root/.config/kitty/kitty.conf
+
+# ── Zsh as default shell for root (live session) ─────────────────────────────
+if command -v zsh &>/dev/null && grep -q '^root:' /etc/passwd; then
+    chsh -s "$(command -v zsh)" root && echo "    root shell set to zsh." || true
+fi
+
+# ── Starship config (root — live session) ─────────────────────────────────────
+mkdir -p /root/.config
+cp /etc/skel/.config/starship.toml /root/.config/starship.toml
 
 # ── /etc/skel dotfiles (copied to every new user by Calamares) ───────────────
 mkdir -p /etc/skel/.config/gtk-3.0 /etc/skel/.config/gtk-4.0
@@ -213,6 +233,14 @@ cat > /etc/skel/.config/kdeglobals << 'KDEGLOBALS'
 ColorScheme=Dracula
 Name=Dracula
 shadeSortColumn=true
+font=JetBrains Mono,11,-1,5,50,0,0,0,0,0
+fixed=JetBrains Mono,11,-1,5,50,0,0,0,0,0
+smallestReadableFont=JetBrains Mono,8,-1,5,50,0,0,0,0,0
+toolBarFont=JetBrains Mono,10,-1,5,50,0,0,0,0,0
+menuFont=JetBrains Mono,11,-1,5,50,0,0,0,0,0
+activeFont=JetBrains Mono,11,-1,5,75,0,0,0,0,0
+TerminalApplication=kitty
+TerminalService=kitty.desktop
 
 [KDE]
 ColorScheme=Dracula
@@ -311,6 +339,49 @@ BREEZERC
 echo "    /etc/skel dotfiles written."
 
 echo "==> ClariceOS: Dracula theme configuration complete."
+
+# ── Plymouth Dracula theme — generate colour assets ───────────────────────────
+# The .plymouth descriptor and .script are shipped in airootfs.
+# The three 1×1 PNG colour swatches must be generated at build time because
+# binary files cannot be stored as plain text in the source tree.
+echo "==> ClariceOS: generating Plymouth theme assets..."
+
+PLYMOUTH_THEME_DIR="/usr/share/plymouth/themes/clariceos"
+mkdir -p "${PLYMOUTH_THEME_DIR}"
+
+python3 << 'PYEOF'
+import struct, zlib, os
+
+def make_png_1x1(r, g, b, path):
+    """Write a minimal 1×1 RGB PNG to *path*."""
+    def chunk(tag, data):
+        buf = tag + data
+        return (struct.pack('>I', len(data)) + buf +
+                struct.pack('>I', zlib.crc32(buf) & 0xFFFFFFFF))
+
+    ihdr = chunk(b'IHDR', struct.pack('>IIBBBBB', 1, 1, 8, 2, 0, 0, 0))
+    idat = chunk(b'IDAT', zlib.compress(bytes([0, r, g, b]), 9))
+    iend = chunk(b'IEND', b'')
+    with open(path, 'wb') as fh:
+        fh.write(b'\x89PNG\r\n\x1a\n' + ihdr + idat + iend)
+
+base = '/usr/share/plymouth/themes/clariceos'
+make_png_1x1( 40,  42,  54, os.path.join(base, 'background.png'))   # #282a36
+make_png_1x1(189, 147, 249, os.path.join(base, 'progress.png'))     # #bd93f9
+make_png_1x1( 68,  71,  90, os.path.join(base, 'progress-bg.png')) # #44475a
+print('    Plymouth PNG assets written.')
+PYEOF
+
+# Register the theme as the live-environment default
+if command -v plymouth-set-default-theme &>/dev/null; then
+    plymouth-set-default-theme clariceos 2>/dev/null \
+        && echo "    Plymouth default theme set to: clariceos" \
+        || echo "    WARNING: plymouth-set-default-theme failed (running outside initramfs?). plymouthd.conf already sets Theme=clariceos."
+else
+    echo "    plymouth-set-default-theme not available at build time — plymouthd.conf already sets Theme=clariceos."
+fi
+
+echo "==> ClariceOS: Plymouth theme ready."
 
 # ── Chaotic-AUR setup (live ISO) ──────────────────────────────────────────────
 # Adds the Chaotic-AUR repository so pre-compiled AUR packages are available
