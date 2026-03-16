@@ -32,6 +32,7 @@ file_permissions=(
   ["/etc/calamares/modules"]="0:0:755"
   ["/etc/calamares/scripts"]="0:0:755"
   ["/etc/calamares/scripts/configure-de.sh"]="0:0:755"
+  ["/etc/calamares/scripts/install-bootloader.sh"]="0:0:755"
   ["/etc/xdg/autostart/calamares.desktop"]="0:0:644"
   ["/usr/share/applications/calamares.desktop"]="0:0:644"
 )
