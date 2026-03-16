@@ -1,0 +1,19 @@
+#%PAM-1.0
+# ClariceOS live ISO — GDM autologin PAM stack.
+#
+# The stock Arch gdm-autologin includes pam_nologin.so as requisite, which
+# blocks autologin for non-root users while /run/nologin exists.  On a live
+# ISO, GDM may start before systemd-user-sessions.service removes that file,
+# causing autologin to silently fail and drop the user to the login screen.
+#
+# This override removes that check.  The live 'live' user is non-root and
+# harmless; we simply permit it unconditionally after confirming it is not root.
+
+auth     required  pam_succeed_if.so user != root quiet
+auth     required  pam_permit.so
+
+account  include   system-local-login
+password include   system-local-login
+
+session  optional  pam_keyinit.so force revoke
+session  include   system-local-login
