@@ -2,7 +2,7 @@
 Type=Application
 Name=Install Clarice OS
 Comment=Start Calamares installer on login
-Exec=calamares
+Exec=pkexec calamares
 Icon=calamares
 Terminal=false
 X-GNOME-Autostart-enabled=true

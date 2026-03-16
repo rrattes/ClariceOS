@@ -502,7 +502,7 @@ DESKTOP
 echo "==> ClariceOS: post-install overlay files written."
 
 # ── Fix /etc/motd escape sequences ───────────────────────────────────────────
-# The motd file uses literal \e (backslash + e) which terminals and PAM display
+# The motd file uses literal \e (backslash + e) which terminals display
 # as raw text. Convert to actual ESC bytes (0x1B) so colours render correctly.
 if [ -f /etc/motd ]; then
     python3 -c "
@@ -511,3 +511,32 @@ open('/etc/motd', 'w').write(content.replace(r'\e', '\033'))
 "
     echo "==> ClariceOS: /etc/motd escape sequences converted."
 fi
+
+# ── Live session user (GDM autologin) ────────────────────────────────────────
+# Modern GDM (45+) refuses root autologin at application level regardless of
+# PAM. Use a dedicated 'live' user with passwordless sudo instead.
+if ! id -u live &>/dev/null; then
+    useradd -m -G wheel,audio,video,storage,optical,network,scanner,uucp live
+fi
+passwd -d live
+
+# Copy skel configs to live home
+cp -rT /etc/skel/ /home/live/
+chown -R live:live /home/live/
+
+# Suppress the post-install welcome assistant in the live session
+# (it only makes sense after Calamares installs the system)
+mkdir -p /home/live/.config/clariceos
+touch /home/live/.config/clariceos/.welcome-done
+chown -R live:live /home/live/.config/
+
+# Passwordless sudo for live user
+echo 'live ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/live
+chmod 440 /etc/sudoers.d/live
+
+# Set zsh as shell for live user
+if command -v zsh &>/dev/null; then
+    chsh -s "$(command -v zsh)" live && echo "    live shell set to zsh." || true
+fi
+
+echo "==> ClariceOS: live user created (autologin via GDM)."
