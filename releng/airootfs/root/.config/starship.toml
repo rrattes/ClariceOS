@@ -1,0 +1,94 @@
+# ClariceOS — Starship Prompt
+# Dracula palette: bg=#282a36  fg=#f8f8f2  purple=#bd93f9  cyan=#8be9fd
+#                 green=#50fa7b  yellow=#f1fa8c  orange=#ffb86c
+#                 pink=#ff79c6  red=#ff5555  comment=#6272a4
+
+# Two-line prompt: path + git on first line, ❯ on second
+format = """
+$directory\
+$git_branch\
+$git_status\
+$python\
+$nodejs\
+$rust\
+$golang\
+$java\
+$cmd_duration\
+$line_break\
+$character"""
+
+# Adds a blank line before every prompt (breathing room)
+add_newline = true
+
+# ── Prompt character ──────────────────────────────────────────────────────────
+[character]
+success_symbol    = "[❯](bold #50fa7b)"
+error_symbol      = "[❯](bold #ff5555)"
+vimcmd_symbol     = "[❮](bold #bd93f9)"
+vimcmd_replace_one_symbol = "[❮](bold #ff79c6)"
+vimcmd_replace_symbol     = "[❮](bold #ff79c6)"
+vimcmd_visual_symbol      = "[❮](bold #f1fa8c)"
+
+# ── Directory ────────────────────────────────────────────────────────────────
+[directory]
+style            = "bold #8be9fd"
+truncation_length = 4
+truncate_to_repo  = true
+read_only         = "  󰌾"
+read_only_style   = "bold #ff5555"
+format            = "[$path]($style)[$read_only]($read_only_style) "
+
+[directory.substitutions]
+"~" = " ~"
+
+# ── Git ──────────────────────────────────────────────────────────────────────
+[git_branch]
+symbol = " "
+style  = "bold #ff79c6"
+format = "on [$symbol$branch(:$remote_branch)]($style) "
+
+[git_status]
+style      = "#f1fa8c"
+format     = '([$all_status$ahead_behind]($style) )'
+conflicted = "="
+ahead      = "⇡${count}"
+behind     = "⇣${count}"
+diverged   = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked  = "?${count}"
+stashed    = "󰏗${count}"
+modified   = "!${count}"
+staged     = "+${count}"
+renamed    = "»${count}"
+deleted    = "✘${count}"
+
+# ── Languages ────────────────────────────────────────────────────────────────
+[python]
+symbol = " "
+style  = "bold #f1fa8c"
+format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+
+[nodejs]
+symbol = " "
+style  = "bold #50fa7b"
+
+[rust]
+symbol = " "
+style  = "bold #ffb86c"
+
+[golang]
+symbol = " "
+style  = "bold #8be9fd"
+
+[java]
+symbol = " "
+style  = "bold #ff5555"
+
+[c]
+symbol = " "
+style  = "bold #8be9fd"
+
+# ── Command duration ─────────────────────────────────────────────────────────
+[cmd_duration]
+style    = "bold #ffb86c"
+format   = "took [$duration]($style) "
+min_time = 2000

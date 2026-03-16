@@ -135,6 +135,11 @@ wvdial
 xfsprogs
 xl2tpd
 zsh
+zsh-autosuggestions
+zsh-syntax-highlighting
+zsh-history-substring-search
+zsh-completions
+starship
 xorg
 xorg-server
 firefox

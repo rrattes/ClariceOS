@@ -115,6 +115,14 @@ for home_dir in /home/*/; do
     [ -f "${home_dir}.config/kitty/kitty.conf" ] || \
         cp /etc/skel/.config/kitty/kitty.conf "${home_dir}.config/kitty/" 2>/dev/null || true
 
+    # Zsh config
+    [ -f "${home_dir}.zshrc" ] || \
+        cp /etc/skel/.zshrc "${home_dir}.zshrc" 2>/dev/null || true
+
+    # Starship prompt config
+    [ -f "${home_dir}.config/starship.toml" ] || \
+        cp /etc/skel/.config/starship.toml "${home_dir}.config/starship.toml" 2>/dev/null || true
+
     # KDE dotfiles (kdeglobals, plasmarc, kwinrc)
     if $KDE_INSTALLED; then
         for conf in kdeglobals plasmarc kwinrc breezerc; do
@@ -123,10 +131,31 @@ for home_dir in /home/*/; do
         done
     fi
 
+    # Set zsh as the login shell for this user
+    if command -v zsh &>/dev/null; then
+        ZSH_PATH="$(command -v zsh)"
+        # Ensure zsh is listed in /etc/shells
+        grep -qxF "${ZSH_PATH}" /etc/shells || echo "${ZSH_PATH}" >> /etc/shells
+        chsh -s "${ZSH_PATH}" "${username}" 2>/dev/null \
+            && echo "    Shell set to zsh for: ${username}" || true
+    fi
+
     # Fix ownership
-    chown -R "${username}:${username}" "${home_dir}.config/" 2>/dev/null || true
-    echo ">>> Dracula theme applied for user: ${username}"
+    chown -R "${username}:${username}" "${home_dir}.config/" "${home_dir}.zshrc" 2>/dev/null || true
+    echo ">>> Dracula theme + zsh applied for user: ${username}"
 done
+
+# ── Set zsh as default shell for root in installed system ─────────────────────
+if command -v zsh &>/dev/null; then
+    ZSH_PATH="$(command -v zsh)"
+    grep -qxF "${ZSH_PATH}" /etc/shells || echo "${ZSH_PATH}" >> /etc/shells
+    chsh -s "${ZSH_PATH}" root 2>/dev/null && echo ">>> root shell set to zsh." || true
+    # Copy zsh + starship configs for root
+    mkdir -p /root/.config
+    [ -f /root/.zshrc ] || cp /etc/skel/.zshrc /root/.zshrc 2>/dev/null || true
+    [ -f /root/.config/starship.toml ] || \
+        cp /etc/skel/.config/starship.toml /root/.config/starship.toml 2>/dev/null || true
+fi
 
 # ── Chaotic-AUR setup (installed system) ─────────────────────────────────────
 # Chaotic-AUR provides pre-compiled AUR packages, eliminating the need to

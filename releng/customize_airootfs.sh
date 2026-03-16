@@ -211,6 +211,15 @@ cp /root/.config/gtk-3.0/settings.ini /root/.config/gtk-4.0/settings.ini
 mkdir -p /root/.config/kitty
 cp /etc/skel/.config/kitty/kitty.conf /root/.config/kitty/kitty.conf
 
+# ── Zsh as default shell for root (live session) ─────────────────────────────
+if command -v zsh &>/dev/null && grep -q '^root:' /etc/passwd; then
+    chsh -s "$(command -v zsh)" root && echo "    root shell set to zsh." || true
+fi
+
+# ── Starship config (root — live session) ─────────────────────────────────────
+mkdir -p /root/.config
+cp /etc/skel/.config/starship.toml /root/.config/starship.toml
+
 # ── /etc/skel dotfiles (copied to every new user by Calamares) ───────────────
 mkdir -p /etc/skel/.config/gtk-3.0 /etc/skel/.config/gtk-4.0
 cp /root/.config/gtk-3.0/settings.ini /etc/skel/.config/gtk-3.0/settings.ini
