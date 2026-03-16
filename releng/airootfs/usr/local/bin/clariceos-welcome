@@ -83,6 +83,8 @@ if lspci 2>/dev/null | grep -qi "NVIDIA"; then
     GPU_VENDOR="nvidia"
 elif lspci 2>/dev/null | grep -qi "AMD.*VGA\|VGA.*AMD\|ATI.*VGA\|VGA.*ATI\|Advanced Micro Devices.*VGA"; then
     GPU_VENDOR="amd"
+elif lspci 2>/dev/null | grep -qi "Intel.*Graphics\|Intel.*VGA\|Intel.*Display"; then
+    GPU_VENDOR="intel"
 fi
 
 if [ "${GPU_VENDOR}" = "nvidia" ]; then
@@ -124,6 +126,25 @@ libva-mesa-driver — aceleração de vídeo por hardware.</span>" \
             "sudo pacman -S --noconfirm --needed mesa vulkan-radeon lib32-mesa \
              lib32-vulkan-radeon libva-mesa-driver mesa-vdpau && \
              echo 'Driver AMD instalado!'"
+    fi
+
+elif [ "${GPU_VENDOR}" = "intel" ]; then
+    if ! pacman -Q vulkan-intel &>/dev/null 2>&1; then
+        yad --center --title="${TITLE}" \
+            --width=560 --height=260 \
+            --image="${ICON_INFO}" \
+            --text="<b>GPU Intel detectada!</b>\n\n\
+Recomendamos instalar o driver Vulkan e o decodificador\n\
+de vídeo por hardware para melhor performance.\n\n\
+<span size='small' color='#6272a4'>Pacotes: vulkan-intel intel-media-driver\n\
+libva-intel-driver — aceleração de vídeo por hardware.</span>" \
+            --button="Instalar Driver Intel:0" \
+            --button="Pular:1"
+
+        [ $? -eq 0 ] && open_terminal \
+            "sudo pacman -S --noconfirm --needed vulkan-intel intel-media-driver \
+             libva-intel-driver lib32-vulkan-intel && \
+             echo 'Driver Intel instalado!'"
     fi
 fi
 
