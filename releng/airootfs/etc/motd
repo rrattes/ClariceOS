@@ -1,21 +1,21 @@
 
-\e[38;2;189;147;249m  ██████╗██╗      █████╗ ██████╗ ██╗ ██████╗███████╗ ██████╗ ███████╗\e[0m
-\e[38;2;189;147;249m ██╔════╝██║     ██╔══██╗██╔══██╗██║██╔════╝██╔════╝██╔═══██╗██╔════╝\e[0m
-\e[38;2;139;233;253m ██║     ██║     ███████║██████╔╝██║██║     █████╗  ██║   ██║███████╗\e[0m
-\e[38;2;139;233;253m ██║     ██║     ██╔══██║██╔══██╗██║██║     ██╔══╝  ██║   ██║╚════██║\e[0m
-\e[38;2;80;250;123m ╚██████╗███████╗██║  ██║██║  ██║██║╚██████╗███████╗╚██████╔╝███████║\e[0m
-\e[38;2;80;250;123m  ╚═════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝ ╚═════╝╚══════╝ ╚═════╝ ╚══════╝\e[0m
+[38;2;189;147;249m  ██████╗██╗      █████╗ ██████╗ ██╗ ██████╗███████╗ ██████╗ ███████╗[0m
+[38;2;189;147;249m ██╔════╝██║     ██╔══██╗██╔══██╗██║██╔════╝██╔════╝██╔═══██╗██╔════╝[0m
+[38;2;139;233;253m ██║     ██║     ███████║██████╔╝██║██║     █████╗  ██║   ██║███████╗[0m
+[38;2;139;233;253m ██║     ██║     ██╔══██║██╔══██╗██║██║     ██╔══╝  ██║   ██║╚════██║[0m
+[38;2;80;250;123m ╚██████╗███████╗██║  ██║██║  ██║██║╚██████╗███████╗╚██████╔╝███████║[0m
+[38;2;80;250;123m  ╚═════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝ ╚═════╝╚══════╝ ╚═════╝ ╚══════╝[0m
 
-\e[38;2;98;114;164m  Baseado em Arch Linux  •  Tema Dracula  •  Limine Bootloader\e[0m
-\e[38;2;98;114;164m  PipeWire  •  zRAM  •  AppArmor  •  Flatpak  •  Snapper\e[0m
+[38;2;98;114;164m  Baseado em Arch Linux  •  Tema Dracula  •  Limine Bootloader[0m
+[38;2;98;114;164m  PipeWire  •  zRAM  •  AppArmor  •  Flatpak  •  Snapper[0m
 
-\e[38;2;255;184;108m  Comandos úteis:\e[0m
-\e[38;2;248;248;242m    yay -Syu\e[0m\e[38;2;98;114;164m               — atualizar tudo (pacman + AUR)\e[0m
-\e[38;2;248;248;242m    flatpak update\e[0m\e[38;2;98;114;164m          — atualizar apps Flatpak\e[0m
-\e[38;2;248;248;242m    snapper list\e[0m\e[38;2;98;114;164m            — listar snapshots btrfs\e[0m
-\e[38;2;248;248;242m    clariceos-welcome\e[0m\e[38;2;98;114;164m       — reabrir assistente de configuração\e[0m
-\e[38;2;248;248;242m    cat /var/log/clariceos-hardware.log\e[0m\e[38;2;98;114;164m  — relatório de hardware\e[0m
+[38;2;255;184;108m  Comandos úteis:[0m
+[38;2;248;248;242m    yay -Syu[0m[38;2;98;114;164m               — atualizar tudo (pacman + AUR)[0m
+[38;2;248;248;242m    flatpak update[0m[38;2;98;114;164m          — atualizar apps Flatpak[0m
+[38;2;248;248;242m    snapper list[0m[38;2;98;114;164m            — listar snapshots btrfs[0m
+[38;2;248;248;242m    clariceos-welcome[0m[38;2;98;114;164m       — reabrir assistente de configuração[0m
+[38;2;248;248;242m    cat /var/log/clariceos-hardware.log[0m[38;2;98;114;164m  — relatório de hardware[0m
 
-\e[38;2;98;114;164m  Documentação: \e[38;2;139;233;253mgithub.com/rrattes/ClariceOS\e[0m
-\e[38;2;98;114;164m  Problemas:    \e[38;2;139;233;253mgithub.com/rrattes/ClariceOS/issues\e[0m
+[38;2;98;114;164m  Documentação: [38;2;139;233;253mgithub.com/rrattes/ClariceOS[0m
+[38;2;98;114;164m  Problemas:    [38;2;139;233;253mgithub.com/rrattes/ClariceOS/issues[0m
 
