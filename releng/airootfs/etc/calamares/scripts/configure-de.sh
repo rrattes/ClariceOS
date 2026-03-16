@@ -45,11 +45,11 @@ elif $GNOME_INSTALLED; then
     systemctl enable  gdm.service  2>/dev/null || true
     systemctl disable sddm.service 2>/dev/null || true
 
-    # Remove AutomaticLogin=root that was set for the live session
+    # Disable the live-session autologin — installed system must not autologin
     GDM_CONF="/etc/gdm/custom.conf"
     if [ -f "$GDM_CONF" ]; then
         sed -i 's/^AutomaticLoginEnable=True/AutomaticLoginEnable=False/' "$GDM_CONF"
-        sed -i 's/^AutomaticLogin=root//' "$GDM_CONF"
+        sed -i '/^AutomaticLogin=/d' "$GDM_CONF"
         echo ">>> Fixed GDM autologin"
     fi
 
