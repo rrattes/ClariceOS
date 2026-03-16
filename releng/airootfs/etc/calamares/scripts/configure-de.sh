@@ -93,4 +93,37 @@ for home_dir in /home/*/; do
     echo ">>> Dracula theme applied for user: ${username}"
 done
 
+# ── Install pamac (AUR graphical package manager) ────────────────────────────
+echo ">>> Installing pamac-aur via yay..."
+
+install_pamac() {
+    # yay is in the extra repo and was installed as a live package.
+    # It is also included in packages.x86_64 so it ships in the installed system.
+    if ! command -v yay &>/dev/null; then
+        echo "    WARNING: yay not found — skipping pamac installation."
+        return 1
+    fi
+
+    # Find the first non-root user (the one created during installation)
+    local BUILD_USER
+    BUILD_USER=$(awk -F: '$3>=1000 && $3<65534 {print $1; exit}' /etc/passwd 2>/dev/null || true)
+
+    if [ -z "${BUILD_USER}" ]; then
+        echo "    WARNING: no non-root user found — cannot run yay as unprivileged user."
+        return 1
+    fi
+
+    # Grant temporary NOPASSWD sudo so yay can call pacman
+    echo "${BUILD_USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/99-pamac-install
+
+    # Run yay as the target user
+    sudo -u "${BUILD_USER}" yay -S --noconfirm --needed pamac-aur 2>/dev/null \
+        && echo "    pamac-aur installed successfully." \
+        || { echo "    WARNING: pamac-aur installation failed."; rm -f /etc/sudoers.d/99-pamac-install; return 1; }
+
+    rm -f /etc/sudoers.d/99-pamac-install
+}
+
+install_pamac || true
+
 echo ">>> ClariceOS post-install configuration complete."
