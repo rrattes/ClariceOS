@@ -500,3 +500,14 @@ Keywords=install;installer;setup;clariceos;
 DESKTOP
 
 echo "==> ClariceOS: post-install overlay files written."
+
+# ── Fix /etc/motd escape sequences ───────────────────────────────────────────
+# The motd file uses literal \e (backslash + e) which terminals and PAM display
+# as raw text. Convert to actual ESC bytes (0x1B) so colours render correctly.
+if [ -f /etc/motd ]; then
+    python3 -c "
+content = open('/etc/motd').read()
+open('/etc/motd', 'w').write(content.replace(r'\e', '\033'))
+"
+    echo "==> ClariceOS: /etc/motd escape sequences converted."
+fi
