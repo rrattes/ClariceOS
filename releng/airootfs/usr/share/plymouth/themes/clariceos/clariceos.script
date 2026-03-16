@@ -1,0 +1,56 @@
+// ClariceOS Plymouth Theme — Dracula colour palette
+// Dracula: bg=#282a36  fg=#f8f8f2  purple=#bd93f9  comment=#44475a
+
+// ── Screen dimensions ─────────────────────────────────────────────────────────
+width  = Window.GetWidth();
+height = Window.GetHeight();
+
+// ── Background ────────────────────────────────────────────────────────────────
+bg     = Image("background.png");
+bg     = bg.Scale(width, height);
+bg_spr = Sprite(bg);
+bg_spr.SetZ(-100);
+
+// ── Title text ────────────────────────────────────────────────────────────────
+// fg = #f8f8f2 = (0.973, 0.973, 0.898)
+title     = Image.Text("ClariceOS", 0.973, 0.973, 0.898, 1, "Sans Bold 28");
+title_spr = Sprite(title);
+title_spr.SetX(Math.Int(width  / 2 - title.GetWidth()  / 2));
+title_spr.SetY(Math.Int(height / 2 - title.GetHeight() / 2 - 40));
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+bar_w = Math.Int(width * 0.50);
+bar_h = 4;
+bar_x = Math.Int((width - bar_w) / 2);
+bar_y = Math.Int(height * 0.67);
+
+// Background track — #44475a
+track     = Image("progress-bg.png").Scale(bar_w, bar_h);
+track_spr = Sprite(track);
+track_spr.SetX(bar_x);
+track_spr.SetY(bar_y);
+track_spr.SetZ(0);
+
+// Fill — #bd93f9 (Dracula purple)
+fill_spr = Sprite();
+fill_spr.SetX(bar_x);
+fill_spr.SetY(bar_y);
+fill_spr.SetZ(1);
+
+fun boot_progress_callback(time, progress) {
+    w = Math.Int(bar_w * progress);
+    if (w < 1) w = 1;
+    fill_spr.SetImage(Image("progress.png").Scale(w, bar_h));
+}
+Plymouth.SetBootProgressFunction(boot_progress_callback);
+
+// ── Boot message ──────────────────────────────────────────────────────────────
+msg_spr = Sprite();
+
+fun message_callback(text) {
+    img = Image.Text(text, 0.973, 0.973, 0.898, 0.65, "Sans 10");
+    msg_spr.SetImage(img);
+    msg_spr.SetX(Math.Int(width / 2 - img.GetWidth() / 2));
+    msg_spr.SetY(bar_y + bar_h + 12);
+}
+Plymouth.SetMessageFunction(message_callback);

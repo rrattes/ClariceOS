@@ -232,6 +232,101 @@ install_gpu_drivers() {
 
 install_gpu_drivers || true
 
+# ── Plymouth Dracula theme — deploy to installed system ───────────────────────
+echo ">>> Installing ClariceOS Plymouth theme..."
+if command -v plymouth &>/dev/null; then
+    PLYDIR="/usr/share/plymouth/themes/clariceos"
+    mkdir -p "${PLYDIR}"
+
+    # Theme descriptor
+    cat > "${PLYDIR}/clariceos.plymouth" << 'PLYDESC'
+[Plymouth Theme]
+Name=ClariceOS
+Description=ClariceOS — Dracula boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/clariceos
+ScriptFile=/usr/share/plymouth/themes/clariceos/clariceos.script
+PLYDESC
+
+    # Plymouth script
+    cat > "${PLYDIR}/clariceos.script" << 'PLYSCRIPT'
+// ClariceOS Plymouth Theme — Dracula colour palette
+width  = Window.GetWidth();
+height = Window.GetHeight();
+
+bg     = Image("background.png");
+bg     = bg.Scale(width, height);
+bg_spr = Sprite(bg);
+bg_spr.SetZ(-100);
+
+title     = Image.Text("ClariceOS", 0.973, 0.973, 0.898, 1, "Sans Bold 28");
+title_spr = Sprite(title);
+title_spr.SetX(Math.Int(width  / 2 - title.GetWidth()  / 2));
+title_spr.SetY(Math.Int(height / 2 - title.GetHeight() / 2 - 40));
+
+bar_w = Math.Int(width * 0.50);
+bar_h = 4;
+bar_x = Math.Int((width - bar_w) / 2);
+bar_y = Math.Int(height * 0.67);
+
+track     = Image("progress-bg.png").Scale(bar_w, bar_h);
+track_spr = Sprite(track);
+track_spr.SetX(bar_x);
+track_spr.SetY(bar_y);
+track_spr.SetZ(0);
+
+fill_spr = Sprite();
+fill_spr.SetX(bar_x);
+fill_spr.SetY(bar_y);
+fill_spr.SetZ(1);
+
+fun boot_progress_callback(time, progress) {
+    w = Math.Int(bar_w * progress);
+    if (w < 1) w = 1;
+    fill_spr.SetImage(Image("progress.png").Scale(w, bar_h));
+}
+Plymouth.SetBootProgressFunction(boot_progress_callback);
+
+msg_spr = Sprite();
+fun message_callback(text) {
+    img = Image.Text(text, 0.973, 0.973, 0.898, 0.65, "Sans 10");
+    msg_spr.SetImage(img);
+    msg_spr.SetX(Math.Int(width / 2 - img.GetWidth() / 2));
+    msg_spr.SetY(bar_y + bar_h + 12);
+}
+Plymouth.SetMessageFunction(message_callback);
+PLYSCRIPT
+
+    # Generate 1×1 PNG colour swatches using Python3 stdlib (no Pillow needed)
+    python3 << 'PYEOF'
+import struct, zlib, os
+
+def make_png_1x1(r, g, b, path):
+    def chunk(tag, data):
+        buf = tag + data
+        return (struct.pack('>I', len(data)) + buf +
+                struct.pack('>I', zlib.crc32(buf) & 0xFFFFFFFF))
+    ihdr = chunk(b'IHDR', struct.pack('>IIBBBBB', 1, 1, 8, 2, 0, 0, 0))
+    idat = chunk(b'IDAT', zlib.compress(bytes([0, r, g, b]), 9))
+    iend = chunk(b'IEND', b'')
+    with open(path, 'wb') as fh:
+        fh.write(b'\x89PNG\r\n\x1a\n' + ihdr + idat + iend)
+
+base = '/usr/share/plymouth/themes/clariceos'
+make_png_1x1( 40,  42,  54, os.path.join(base, 'background.png'))
+make_png_1x1(189, 147, 249, os.path.join(base, 'progress.png'))
+make_png_1x1( 68,  71,  90, os.path.join(base, 'progress-bg.png'))
+PYEOF
+
+    plymouth-set-default-theme clariceos 2>/dev/null \
+        && echo "    Plymouth theme set to: clariceos" \
+        || echo "    WARNING: plymouth-set-default-theme failed; plymouthd.conf already specifies clariceos."
+else
+    echo "    Plymouth not installed — skipping theme deployment."
+fi
+
 # ── Plymouth mkinitcpio hook ───────────────────────────────────────────────────
 echo ">>> Configuring Plymouth boot splash..."
 if command -v plymouth &>/dev/null && [ -f /etc/mkinitcpio.conf ]; then

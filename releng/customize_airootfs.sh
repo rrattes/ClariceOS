@@ -312,6 +312,49 @@ echo "    /etc/skel dotfiles written."
 
 echo "==> ClariceOS: Dracula theme configuration complete."
 
+# ── Plymouth Dracula theme — generate colour assets ───────────────────────────
+# The .plymouth descriptor and .script are shipped in airootfs.
+# The three 1×1 PNG colour swatches must be generated at build time because
+# binary files cannot be stored as plain text in the source tree.
+echo "==> ClariceOS: generating Plymouth theme assets..."
+
+PLYMOUTH_THEME_DIR="/usr/share/plymouth/themes/clariceos"
+mkdir -p "${PLYMOUTH_THEME_DIR}"
+
+python3 << 'PYEOF'
+import struct, zlib, os
+
+def make_png_1x1(r, g, b, path):
+    """Write a minimal 1×1 RGB PNG to *path*."""
+    def chunk(tag, data):
+        buf = tag + data
+        return (struct.pack('>I', len(data)) + buf +
+                struct.pack('>I', zlib.crc32(buf) & 0xFFFFFFFF))
+
+    ihdr = chunk(b'IHDR', struct.pack('>IIBBBBB', 1, 1, 8, 2, 0, 0, 0))
+    idat = chunk(b'IDAT', zlib.compress(bytes([0, r, g, b]), 9))
+    iend = chunk(b'IEND', b'')
+    with open(path, 'wb') as fh:
+        fh.write(b'\x89PNG\r\n\x1a\n' + ihdr + idat + iend)
+
+base = '/usr/share/plymouth/themes/clariceos'
+make_png_1x1( 40,  42,  54, os.path.join(base, 'background.png'))   # #282a36
+make_png_1x1(189, 147, 249, os.path.join(base, 'progress.png'))     # #bd93f9
+make_png_1x1( 68,  71,  90, os.path.join(base, 'progress-bg.png')) # #44475a
+print('    Plymouth PNG assets written.')
+PYEOF
+
+# Register the theme as the live-environment default
+if command -v plymouth-set-default-theme &>/dev/null; then
+    plymouth-set-default-theme clariceos 2>/dev/null \
+        && echo "    Plymouth default theme set to: clariceos" \
+        || echo "    WARNING: plymouth-set-default-theme failed (running outside initramfs?). plymouthd.conf already sets Theme=clariceos."
+else
+    echo "    plymouth-set-default-theme not available at build time — plymouthd.conf already sets Theme=clariceos."
+fi
+
+echo "==> ClariceOS: Plymouth theme ready."
+
 # ── Chaotic-AUR setup (live ISO) ──────────────────────────────────────────────
 # Adds the Chaotic-AUR repository so pre-compiled AUR packages are available
 # in the live environment and in the installed system.
