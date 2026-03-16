@@ -1,0 +1,12 @@
+################################################################################
+################# Chaotic-AUR mirrorlist #######################################
+################################################################################
+
+# Automatic redirector — recommended as primary
+Server = https://cdn-mirror.chaotic.cx/$repo/$arch
+
+# Geographic redirector
+Server = https://geo-mirror.chaotic.cx/$repo/$arch
+
+# CloudFlare CDN
+Server = https://cdn.chaotic.cx/$repo/$arch
