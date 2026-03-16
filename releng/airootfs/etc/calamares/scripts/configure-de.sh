@@ -68,7 +68,7 @@ PROFILE
 cat > /etc/dconf/db/local.d/00-clariceos-theme << 'DCONF'
 [org/gnome/desktop/interface]
 gtk-theme='Dracula'
-icon-theme='Adwaita'
+icon-theme='Tela-dark'
 cursor-theme='Dracula-cursors'
 color-scheme='prefer-dark'
 font-name='JetBrains Mono 11'
@@ -90,6 +90,23 @@ DCONF
 
 if command -v dconf &>/dev/null; then
     dconf update 2>/dev/null && echo ">>> dconf database updated." || true
+fi
+
+# ── Tela icon theme ───────────────────────────────────────────────────────────
+echo ">>> Installing Tela icon theme..."
+TELA_URL="https://github.com/vinceliuice/Tela-icon-theme/archive/refs/heads/master.tar.gz"
+if curl -fsSL -o /tmp/tela-icon-theme.tar.gz "${TELA_URL}" 2>/dev/null; then
+    mkdir -p /tmp/tela-src
+    tar -xzf /tmp/tela-icon-theme.tar.gz -C /tmp/tela-src/ --strip-components=1
+    bash /tmp/tela-src/install.sh -d /usr/share/icons 2>/dev/null
+    rm -rf /tmp/tela-src /tmp/tela-icon-theme.tar.gz
+    for variant in Tela Tela-dark; do
+        [ -d "/usr/share/icons/${variant}" ] && \
+            gtk-update-icon-cache -f -t "/usr/share/icons/${variant}" 2>/dev/null || true
+    done
+    echo "    Tela icon theme installed."
+else
+    echo "    WARNING: Could not download Tela icon theme (no internet?). Skipping."
 fi
 
 # ── Apply Dracula theme to each new user ──────────────────────────────────────

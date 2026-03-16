@@ -23,6 +23,23 @@ else
     echo "    WARNING: Could not download Dracula GTK theme (no internet?). Skipping."
 fi
 
+echo "--> Downloading Tela icon theme..."
+TELA_URL="https://github.com/vinceliuice/Tela-icon-theme/archive/refs/heads/master.tar.gz"
+if curl -fsSL -o /tmp/tela-icon-theme.tar.gz "${TELA_URL}"; then
+    mkdir -p /tmp/tela-src
+    tar -xzf /tmp/tela-icon-theme.tar.gz -C /tmp/tela-src/ --strip-components=1
+    # Install standard + dark variants to system-wide icons directory
+    bash /tmp/tela-src/install.sh -d /usr/share/icons 2>/dev/null
+    rm -rf /tmp/tela-src /tmp/tela-icon-theme.tar.gz
+    for variant in Tela Tela-dark; do
+        [ -d "/usr/share/icons/${variant}" ] && \
+            gtk-update-icon-cache -f -t "/usr/share/icons/${variant}" 2>/dev/null || true
+    done
+    echo "    Tela icon theme installed (Tela, Tela-dark)."
+else
+    echo "    WARNING: Could not download Tela icon theme (no internet?). Skipping."
+fi
+
 echo "--> Downloading Dracula cursor theme..."
 if curl -fsSL -o /tmp/dracula-cursors.tar.xz "${DRACULA_CURSOR_URL}"; then
     tar -xJf /tmp/dracula-cursors.tar.xz -C /usr/share/icons/
@@ -173,7 +190,7 @@ PROFILE
 cat > /etc/dconf/db/local.d/00-clariceos-theme << 'DCONF'
 [org/gnome/desktop/interface]
 gtk-theme='Dracula'
-icon-theme='Adwaita'
+icon-theme='Tela-dark'
 cursor-theme='Dracula-cursors'
 color-scheme='prefer-dark'
 font-name='JetBrains Mono 11'
@@ -200,7 +217,7 @@ mkdir -p /root/.config/gtk-3.0 /root/.config/gtk-4.0
 cat > /root/.config/gtk-3.0/settings.ini << 'GTK'
 [Settings]
 gtk-theme-name=Dracula
-gtk-icon-theme-name=Adwaita
+gtk-icon-theme-name=Tela-dark
 gtk-cursor-theme-name=Dracula-cursors
 gtk-font-name=JetBrains Mono 11
 gtk-application-prefer-dark-theme=true
@@ -248,7 +265,7 @@ contrast=4
 widgetStyle=Breeze
 
 [Icons]
-Theme=breeze-dark
+Theme=Tela-dark
 
 [Colors:Button]
 BackgroundAlternate=68,71,90

@@ -1,6 +1,6 @@
 [org/gnome/desktop/interface]
 gtk-theme='Dracula'
-icon-theme='Adwaita'
+icon-theme='Tela-dark'
 cursor-theme='Dracula-cursors'
 color-scheme='prefer-dark'
 font-name='JetBrains Mono 11'
