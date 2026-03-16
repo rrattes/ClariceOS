@@ -17,6 +17,15 @@ ROOT_DEVICE=$(findmnt -n -o SOURCE /)
 ROOT_FS=$(findmnt -n -o FSTYPE /)
 DISK=$(lsblk -no PKNAME "${ROOT_DEVICE}" 2>/dev/null | head -1)
 
+if [ -z "${ROOT_UUID}" ]; then
+    echo "ERROR: Could not determine root partition UUID. Aborting bootloader install."
+    exit 1
+fi
+if [ -z "${ROOT_DEVICE}" ]; then
+    echo "ERROR: Could not determine root device. Aborting bootloader install."
+    exit 1
+fi
+
 # UEFI: efivarfs is bind-mounted into the chroot by Calamares mount.conf
 UEFI=false
 [ -d /sys/firmware/efi/efivars ] && UEFI=true

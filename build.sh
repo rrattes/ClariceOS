@@ -14,6 +14,14 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
+# Always clean up temp files on exit (success or failure)
+TEMP_PROFILE=""
+cleanup() {
+  [[ -n "${TEMP_PROFILE}" && -d "${TEMP_PROFILE}" ]] && rm -rf "${TEMP_PROFILE}"
+  rm -f /etc/sudoers.d/clariceos-build
+}
+trap cleanup EXIT
+
 # ---------------------------------------------------------------------------
 # 1. Set up Chaotic-AUR on host
 # ---------------------------------------------------------------------------
@@ -29,8 +37,12 @@ if ! pacman-key --list-keys 3056513887B78AEB &>/dev/null; then
 fi
 
 if [[ ! -f /etc/pacman.d/chaotic-mirrorlist ]]; then
-  cp "$SCRIPT_DIR/releng/airootfs/etc/pacman.d/chaotic-mirrorlist" \
-     /etc/pacman.d/chaotic-mirrorlist
+  if [[ -f "$SCRIPT_DIR/releng/airootfs/etc/pacman.d/chaotic-mirrorlist" ]]; then
+    cp "$SCRIPT_DIR/releng/airootfs/etc/pacman.d/chaotic-mirrorlist" \
+       /etc/pacman.d/chaotic-mirrorlist
+  else
+    echo "  WARNING: /etc/pacman.d/chaotic-mirrorlist not found — Chaotic-AUR package should have installed it."
+  fi
 fi
 
 # ---------------------------------------------------------------------------
@@ -110,10 +122,6 @@ mkdir -p "$OUT_DIR"
 echo "==> [4/4] Running mkarchiso..."
 
 mkarchiso -v -w "$WORK_DIR" -o "$OUT_DIR" "$TEMP_PROFILE"
-
-# Cleanup
-rm -rf "$TEMP_PROFILE"
-rm -f /etc/sudoers.d/clariceos-build
 
 echo ""
 echo "==> Build complete! ISO is in: $OUT_DIR"
