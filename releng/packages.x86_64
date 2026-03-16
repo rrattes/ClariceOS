@@ -201,3 +201,12 @@ distrobox
 podman
 # timeshift (snapshot for ext4)
 timeshift
+# zen kernel — low-latency desktop/gaming
+linux-zen
+linux-zen-headers
+# apparmor — MAC security
+apparmor
+# secure boot key management
+sbctl
+# yad — GTK dialog tool (welcome wizard)
+yad

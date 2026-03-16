@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+# ClariceOS Welcome — First-boot setup assistant
+# Runs once on first login after installation.
+# Requires: yad (installed via packages.x86_64)
+
+SENTINEL="${HOME}/.config/clariceos/.welcome-done"
+TITLE="ClariceOS — Bem-vindo"
+
+# Only run once
+[ -f "${SENTINEL}" ] && exit 0
+
+# Require yad and a display
+command -v yad &>/dev/null || exit 0
+[ -z "${DISPLAY}${WAYLAND_DISPLAY}" ] && exit 0
+
+mkdir -p "${HOME}/.config/clariceos"
+
+# ── Helper: open terminal with a command ─────────────────────────────────────
+open_terminal() {
+    local cmd="$1"
+    local full_cmd="${cmd}; echo; echo '==> Concluído. Pressione Enter para fechar.'; read"
+    if command -v gnome-terminal &>/dev/null; then
+        gnome-terminal -- bash -c "${full_cmd}"
+    elif command -v konsole &>/dev/null; then
+        konsole -e bash -c "${full_cmd}"
+    elif command -v xterm &>/dev/null; then
+        xterm -e bash -c "${full_cmd}"
+    fi
+}
+
+# ── Step 1: Welcome ───────────────────────────────────────────────────────────
+yad --center --title="${TITLE}" \
+    --width=580 --height=300 \
+    --text="<span size='x-large' weight='bold'>Bem-vindo ao ClariceOS!</span>\n\n\
+Seu sistema foi instalado com sucesso.\n\n\
+Este assistente irá ajudá-lo a configurar\n\
+algumas funcionalidades iniciais.\n\n\
+<span size='small' color='#6272a4'>Baseado em Arch Linux • Tema Dracula • Limine Bootloader</span>" \
+    --button="Começar:0" \
+    --button="Fechar:1" \
+    || { touch "${SENTINEL}"; exit 0; }
+
+# ── Step 2: System update ─────────────────────────────────────────────────────
+yad --center --title="${TITLE}" \
+    --width=500 --height=200 \
+    --text="<b>Atualizar o sistema?</b>\n\n\
+Recomendamos atualizar todos os pacotes para a versão mais\n\
+recente antes de começar a usar o sistema." \
+    --button="Atualizar Agora:0" \
+    --button="Pular:1"
+
+[ $? -eq 0 ] && open_terminal "yay -Syu --noconfirm"
+
+# ── Step 3: NVIDIA driver ─────────────────────────────────────────────────────
+if lspci 2>/dev/null | grep -qi "NVIDIA"; then
+    if ! pacman -Q nvidia-dkms &>/dev/null 2>&1; then
+        yad --center --title="${TITLE}" \
+            --width=520 --height=240 \
+            --image="dialog-warning" \
+            --text="<b>GPU NVIDIA detectada!</b>\n\n\
+O driver <tt>nvidia-dkms</tt> não está instalado.\n\n\
+• Sem ele: sem aceleração 3D, sem Wayland estável, sem CUDA.\n\
+• Após instalar, reinicie o sistema para ativar." \
+            --button="Instalar Driver NVIDIA:0" \
+            --button="Pular:1"
+
+        [ $? -eq 0 ] && open_terminal \
+            "yay -S --noconfirm --needed nvidia-dkms nvidia-utils nvidia-settings lib32-nvidia-utils \
+             && echo 'Driver instalado! Reinicie para ativar.'"
+    fi
+fi
+
+# ── Step 4: Popular apps ──────────────────────────────────────────────────────
+SELECTION=$(yad --center --title="${TITLE} — Instalar Aplicativos" \
+    --width=620 --height=480 \
+    --list --checklist \
+    --text="<b>Selecione os aplicativos que deseja instalar:</b>" \
+    --column="✓" --column="Pacote" --column="Descrição" --column="Via" \
+    FALSE "vlc"                    "Reprodutor de mídia universal"        "pacman" \
+    FALSE "libreoffice-fresh"      "Suite de escritório completa"         "pacman" \
+    FALSE "gimp"                   "Editor de imagens avançado"           "pacman" \
+    FALSE "obs-studio"             "Gravação e streaming de tela"         "pacman" \
+    FALSE "audacity"               "Editor de áudio"                      "pacman" \
+    FALSE "thunderbird"            "Cliente de e-mail"                    "pacman" \
+    FALSE "telegram-desktop"       "Mensagens instantâneas"               "pacman" \
+    FALSE "visual-studio-code-bin" "VS Code — editor de código"           "AUR"    \
+    FALSE "discord"                "Chat, voz e comunidades"              "Flatpak" \
+    FALSE "spotify"                "Streaming de música"                  "Flatpak" \
+    FALSE "signal-desktop"         "Mensagens seguras"                    "Flatpak" \
+    --button="Instalar Selecionados:0" \
+    --button="Pular:1" \
+    --separator="|" --print-column=2 2>/dev/null)
+
+if [ $? -eq 0 ] && [ -n "${SELECTION}" ]; then
+    PACMAN_PKGS=""
+    AUR_PKGS=""
+    FLATPAK_PKGS=""
+
+    IFS='|' read -ra PKGS <<< "${SELECTION}"
+    for pkg in "${PKGS[@]}"; do
+        pkg="${pkg// /}"
+        [ -z "${pkg}" ] && continue
+        case "${pkg}" in
+            "visual-studio-code-bin") AUR_PKGS="${AUR_PKGS} ${pkg}" ;;
+            "discord")   FLATPAK_PKGS="${FLATPAK_PKGS} com.discordapp.Discord" ;;
+            "spotify")   FLATPAK_PKGS="${FLATPAK_PKGS} com.spotify.Client" ;;
+            "signal-desktop") FLATPAK_PKGS="${FLATPAK_PKGS} org.signal.Signal" ;;
+            *)           PACMAN_PKGS="${PACMAN_PKGS} ${pkg}" ;;
+        esac
+    done
+
+    INSTALL_CMD=""
+    [ -n "${PACMAN_PKGS}" ] && \
+        INSTALL_CMD="${INSTALL_CMD}sudo pacman -S --noconfirm --needed ${PACMAN_PKGS}; "
+    [ -n "${AUR_PKGS}" ] && \
+        INSTALL_CMD="${INSTALL_CMD}yay -S --noconfirm --needed ${AUR_PKGS}; "
+    [ -n "${FLATPAK_PKGS}" ] && \
+        INSTALL_CMD="${INSTALL_CMD}flatpak install -y flathub ${FLATPAK_PKGS}; "
+
+    [ -n "${INSTALL_CMD}" ] && open_terminal "${INSTALL_CMD}"
+fi
+
+# ── Step 5: Done ──────────────────────────────────────────────────────────────
+yad --center --title="${TITLE}" \
+    --width=500 --height=220 \
+    --text="<span size='large' weight='bold'>ClariceOS está pronto!</span>\n\n\
+Seu sistema está configurado e pronto para uso.\n\n\
+<span size='small'>📖 Documentação: <tt>github.com/rrattes/ClariceOS</tt>\n\
+🐛 Problemas: <tt>github.com/rrattes/ClariceOS/issues</tt></span>" \
+    --button="Abrir GitHub:2" \
+    --button="Fechar:0"
+
+ret=$?
+[ ${ret} -eq 2 ] && xdg-open "https://github.com/rrattes/ClariceOS" &
+
+# Mark as done — won't show again
+touch "${SENTINEL}"

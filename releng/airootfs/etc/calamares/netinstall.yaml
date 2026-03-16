@@ -59,6 +59,9 @@
     - wine
     - winetricks
     - bottles
+    - openrgb
+    - xpadneo-dkms
+    - xone-dkms
 
 - name: "Drivers NVIDIA Proprietários"
   description: "Driver nvidia-dkms para GPUs NVIDIA. Habilita aceleração completa e suporte a Wayland. Requires internet connection."

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=ClariceOS Welcome
+Comment=First-boot setup assistant for ClariceOS
+Exec=clariceos-welcome
+Icon=system-help
+Terminal=false
+Categories=System;
+X-GNOME-Autostart-enabled=true
+X-KDE-autostart-after=panel

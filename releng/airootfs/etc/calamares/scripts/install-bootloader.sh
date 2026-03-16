@@ -31,7 +31,7 @@ echo "    disk        : /dev/${DISK}"
 
 # ── Build CMDLINE ─────────────────────────────────────────────────────────────
 
-CMDLINE="root=UUID=${ROOT_UUID} rw quiet splash"
+CMDLINE="root=UUID=${ROOT_UUID} rw quiet splash lsm=landlock,lockdown,yama,integrity,apparmor,bpf"
 
 if ${BTRFS}; then
     # Extract the subvolume from current mount options (set by Calamares fstab)
@@ -76,6 +76,28 @@ INTERFACE_BRANDING=ClariceOS
     CMDLINE=${CMDLINE}
     MODULE_PATH=${initrd_prefix}/initramfs-linux-fallback.img
 CFG
+
+    # linux-zen entries — appended only if the kernel is present
+    if [ -f "/boot/vmlinuz-linux-zen" ]; then
+        cat >> "${cfg_path}" << CFG_ZEN
+
+:ClariceOS Linux Zen
+    COMMENT=ClariceOS (linux-zen, low-latency)
+    PROTOCOL=linux
+    KERNEL_PATH=${kernel_prefix}/vmlinuz-linux-zen
+    CMDLINE=${CMDLINE}
+    MODULE_PATH=${initrd_prefix}/initramfs-linux-zen.img
+
+:ClariceOS Linux Zen (fallback initramfs)
+    COMMENT=ClariceOS (linux-zen, fallback)
+    PROTOCOL=linux
+    KERNEL_PATH=${kernel_prefix}/vmlinuz-linux-zen
+    CMDLINE=${CMDLINE}
+    MODULE_PATH=${initrd_prefix}/initramfs-linux-zen-fallback.img
+CFG_ZEN
+        echo "    linux-zen entries added to limine.cfg."
+    fi
+
     echo "    limine.cfg written → ${cfg_path}"
 }
 
