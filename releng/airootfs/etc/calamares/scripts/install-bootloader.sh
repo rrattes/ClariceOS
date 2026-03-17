@@ -168,8 +168,10 @@ else
         echo "ERROR: could not determine target disk — cannot install Limine (BIOS)."
         exit 1
     fi
-    limine bios-install "/dev/${DISK}"
+    # limine-bios.sys must exist on disk BEFORE bios-install so it can embed
+    # the correct sector pointers into the MBR code.
     cp /usr/share/limine/limine-bios.sys /boot/
+    limine bios-install "/dev/${DISK}"
     echo "    Limine installed to MBR of /dev/${DISK}."
 fi
 
