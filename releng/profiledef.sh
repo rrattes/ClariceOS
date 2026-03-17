@@ -33,6 +33,7 @@ file_permissions=(
   ["/etc/calamares/scripts"]="0:0:755"
   ["/etc/calamares/scripts/configure-de.sh"]="0:0:755"
   ["/etc/calamares/scripts/install-bootloader.sh"]="0:0:755"
+  ["/etc/calamares/scripts/limine-deploy.sh"]="0:0:755"
   ["/etc/calamares/scripts/btrfs-hooks.sh"]="0:0:755"
   ["/etc/calamares/scripts/setup-secureboot.sh"]="0:0:755"
   ["/etc/calamares/scripts/remove-live-pkgs.sh"]="0:0:755"
