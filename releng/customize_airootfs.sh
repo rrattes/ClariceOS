@@ -528,6 +528,12 @@ chown -R live:live /home/live/
 # (it only makes sense after Calamares installs the system)
 mkdir -p /home/live/.config/clariceos
 touch /home/live/.config/clariceos/.welcome-done
+
+# Prevent GNOME Shell from launching gnome-initial-setup on the live session.
+# GDM is already configured with InitialSetupEnable=False (no pre-login wizard),
+# but GNOME Shell itself checks for this marker at session start.
+touch /home/live/.config/gnome-initial-setup-done
+
 chown -R live:live /home/live/.config/
 
 # Passwordless sudo for live user
