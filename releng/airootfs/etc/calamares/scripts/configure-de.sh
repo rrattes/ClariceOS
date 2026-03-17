@@ -45,12 +45,18 @@ elif $GNOME_INSTALLED; then
     systemctl enable  gdm.service  2>/dev/null || true
     systemctl disable sddm.service 2>/dev/null || true
 
-    # Disable the live-session autologin — installed system must not autologin
+    # Switch GDM autologin from the live 'live' user to the installed user.
+    # The live ISO ships AutomaticLogin=live; we replace it with the real user.
+    INSTALLED_USER=$(awk -F: '$3>=1000 && $3<65534 {print $1; exit}' /etc/passwd 2>/dev/null || true)
     GDM_CONF="/etc/gdm/custom.conf"
-    if [ -f "$GDM_CONF" ]; then
+    if [ -f "$GDM_CONF" ] && [ -n "${INSTALLED_USER}" ]; then
+        sed -i "s/^AutomaticLogin=.*/AutomaticLogin=${INSTALLED_USER}/" "$GDM_CONF"
+        echo ">>> GDM autologin set to installed user: ${INSTALLED_USER}"
+    elif [ -f "$GDM_CONF" ]; then
+        # No real user found — disable autologin to avoid a broken state
         sed -i 's/^AutomaticLoginEnable=True/AutomaticLoginEnable=False/' "$GDM_CONF"
         sed -i '/^AutomaticLogin=/d' "$GDM_CONF"
-        echo ">>> Fixed GDM autologin"
+        echo ">>> GDM autologin disabled (no installed user found)"
     fi
 
 else
@@ -116,6 +122,11 @@ fi
 for home_dir in /home/*/; do
     [ -d "$home_dir" ] || continue
     username=$(basename "$home_dir")
+
+    # Skip gnome-initial-setup on first login — without this file GNOME Shell
+    # launches the setup wizard instead of the normal desktop session.
+    mkdir -p "${home_dir}.config"
+    touch "${home_dir}.config/gnome-initial-setup-done" 2>/dev/null || true
 
     # GTK3
     mkdir -p "${home_dir}.config/gtk-3.0"
