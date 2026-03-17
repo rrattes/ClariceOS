@@ -54,11 +54,12 @@ fi
 # ── Write limine.cfg ──────────────────────────────────────────────────────────
 # UEFI : config lives on the ESP so Limine EFI can read it at firmware time.
 #        Kernel/initramfs are on the root partition referenced by UUID.
-# BIOS : config lives at /boot on the root partition; boot:/// resolves there.
+# BIOS : config lives at /boot on the root partition.  boot:// refers to the
+#        partition root (not /boot/), so paths must include /boot explicitly.
 
 write_limine_cfg() {
     local cfg_path="$1"
-    local kernel_prefix="$2"   # "uuid://${ROOT_UUID}/boot" or "boot://"
+    local kernel_prefix="$2"   # "uuid://${ROOT_UUID}/boot" or "boot:///boot"
     local initrd_prefix="$3"
 
     mkdir -p "$(dirname "${cfg_path}")"
@@ -131,7 +132,10 @@ if ${UEFI}; then
     write_limine_cfg "${ESP}/limine.cfg"        "${K_PREFIX}" "${K_PREFIX}"
     write_limine_cfg "/boot/limine.cfg"          "${K_PREFIX}" "${K_PREFIX}"
 else
-    write_limine_cfg "/boot/limine.cfg"          "boot://" "boot://"
+    # /boot lives inside the root partition (typical BIOS layout — no separate
+    # /boot partition).  Limine's boot:// refers to the partition root, so
+    # all kernel/initramfs paths must include the /boot prefix.
+    write_limine_cfg "/boot/limine.cfg" "boot:///boot" "boot:///boot"
 fi
 
 # ── Install Limine ────────────────────────────────────────────────────────────
