@@ -43,6 +43,14 @@ if [ -z "${ROOT_DEVICE}" ]; then
     exit 1
 fi
 
+# Physical disk that backs the root device (e.g. /dev/nvme0n1 from /dev/nvme0n1p2
+# or from mapper/LVM roots).
+DISK=$(resolve_disk "${ROOT_DEVICE}" || true)
+if [ -z "${DISK}" ] || [ ! -b "/dev/${DISK}" ]; then
+    echo "ERROR: Could not resolve target disk from root device '${ROOT_DEVICE}'."
+    exit 1
+fi
+
 # UEFI: efivarfs is bind-mounted into the chroot by Calamares mount.conf
 UEFI=false
 [ -d /sys/firmware/efi/efivars ] && UEFI=true
@@ -162,55 +170,12 @@ else
     write_limine_cfg "/boot/limine.cfg" "boot:///boot" "boot:///boot"
 fi
 
-# ── Install Limine ────────────────────────────────────────────────────────────
+# ── Install Limine (raw disk / EFI deploy) ───────────────────────────────────
+# The raw-device deployment is intentionally executed by shellprocess@limine-deploy
+# (outside chroot) for better device visibility and lower risk on BIOS installs.
+# Here we only generate limine.cfg and leave binaries/MBR writing to the final step.
 
-if ${UEFI}; then
-    # Reuse the validated ESP found above instead of resolving again.
-    : "${ESP:?missing ESP mount point}"
-
-    mkdir -p "${ESP}/EFI/limine" "${ESP}/EFI/BOOT"
-
-    # Limine EFI binary (64-bit)
-    cp /usr/share/limine/BOOTX64.EFI "${ESP}/EFI/limine/"
-    # Fallback path — firmware will boot this if no NVRAM entry is found
-    cp /usr/share/limine/BOOTX64.EFI "${ESP}/EFI/BOOT/"
-
-    echo "    Limine EFI binaries copied."
-
-    # Register a firmware boot entry via efibootmgr
-    if command -v efibootmgr &>/dev/null; then
-        # Register entry against the disk that actually backs the ESP.
-        EFI_DEVICE=$(findmnt -n -o SOURCE "${ESP}" 2>/dev/null || true)
-        EFI_DISK=$(resolve_disk "${EFI_DEVICE}" || true)
-        EFI_PART_NUM=$(lsblk -no PARTN "${EFI_DEVICE}" 2>/dev/null | head -1 || echo "1")
-        [ -z "${EFI_PART_NUM}" ] && EFI_PART_NUM="1"
-        if [ -n "${EFI_DISK}" ] && [ -b "/dev/${EFI_DISK}" ]; then
-            efibootmgr --create \
-                --disk "/dev/${EFI_DISK}" \
-                --part "${EFI_PART_NUM}" \
-                --label "ClariceOS (Limine)" \
-                --loader "/EFI/limine/BOOTX64.EFI" \
-                2>/dev/null \
-                && echo "    UEFI boot entry created." \
-                || echo "    WARNING: efibootmgr failed — EFI/BOOT fallback will be used."
-        else
-            echo "    WARNING: could not resolve ESP disk for efibootmgr; EFI/BOOT fallback will be used."
-        fi
-    fi
-else
-    # BIOS: write Limine to the MBR of the target disk
-    if [ -z "${DISK}" ]; then
-        echo "ERROR: could not determine target disk — cannot install Limine (BIOS)."
-        exit 1
-    fi
-    # limine-bios.sys must exist on disk BEFORE bios-install so it can embed
-    # the correct sector pointers into the MBR code.
-    cp /usr/share/limine/limine-bios.sys /boot/
-    limine bios-install "/dev/${DISK}"
-    echo "    Limine installed to MBR of /dev/${DISK}."
-fi
-
-echo "==> Limine installed successfully."
+echo "==> Limine configuration generated. Raw deploy will run in limine-deploy step."
 
 # ── btrfs + snapper + limine-snapper-sync ────────────────────────────────────
 

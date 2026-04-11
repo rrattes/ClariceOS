@@ -1,19 +1,19 @@
 [org/gnome/desktop/interface]
-gtk-theme='Dracula'
+gtk-theme='Fluent-Dark'
 icon-theme='Tela-dark'
-cursor-theme='Dracula-cursors'
+cursor-theme='Adwaita'
 color-scheme='prefer-dark'
 font-name='JetBrains Mono 11'
 monospace-font-name='JetBrains Mono 11'
 document-font-name='JetBrains Mono 11'
 
 [org/gnome/desktop/wm/preferences]
-theme='Dracula'
+theme='Fluent-Dark'
 button-layout=':minimize,maximize,close'
 titlebar-font='JetBrains Mono Bold 11'
 
 [org/gnome/shell/extensions/user-theme]
-name='Dracula'
+name='Fluent-Dark'
 
 [org/gnome/desktop/default-applications/terminal]
 exec='kitty'
