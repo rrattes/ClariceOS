@@ -484,12 +484,26 @@ Version=1.5
 Name=Install Clarice OS
 GenericName=System Installer
 Comment=Install Clarice OS to your computer
-Exec=calamares
+Exec=sudo -E calamares
 Icon=calamares
 Terminal=false
 Categories=System;
 Keywords=install;installer;setup;clariceos;
 DESKTOP
+
+# /etc/xdg/autostart/calamares.desktop — auto-start installer in live session
+mkdir -p /etc/xdg/autostart
+cat > /etc/xdg/autostart/calamares.desktop << 'AUTOSTART'
+[Desktop Entry]
+Type=Application
+Name=Install Clarice OS
+Comment=Start Calamares installer on login
+Exec=sudo -E calamares
+Icon=calamares
+Terminal=false
+X-GNOME-Autostart-enabled=true
+NoDisplay=true
+AUTOSTART
 
 echo "==> ClariceOS: post-install overlay files written."
 
