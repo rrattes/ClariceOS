@@ -31,7 +31,7 @@ Presentation {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24
-            text: qsTr("Installing Clarice OS — please wait…")
+            text: qsTr("Instalando ClariceOS... não desligue o computador.")
             font.pixelSize: 18
             color: "#ffffff"
         }
@@ -51,7 +51,7 @@ Presentation {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("Welcome to Clarice OS")
+                text: qsTr("Bem-vindo ao instalador do ClariceOS")
                 font.pixelSize: 26
                 font.bold: true
                 color: "#97d3e8"
@@ -59,7 +59,7 @@ Presentation {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("A modern Arch Linux-based operating system.")
+                text: qsTr("Dica: primeiro escolha seu perfil de uso e depois selecione o ambiente gráfico (DE).")
                 font.pixelSize: 16
                 color: "#ffffff"
             }
