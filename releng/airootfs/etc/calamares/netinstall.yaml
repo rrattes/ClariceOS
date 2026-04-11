@@ -1,9 +1,5 @@
 ---
-# Etapa 2: escolha do Ambiente Gráfico (DE).
-#
-# Selecione apenas um ambiente principal:
-# - GNOME: já vem na ISO e funciona offline.
-# - KDE Plasma: baixado durante a instalação (requer internet).
+# Escolha seu ambiente gráfico e, em seguida, os perfis opcionais de uso.
 
 - name: "GNOME"
   description: "GNOME (recomendado) — pronto para uso, funciona offline e não requer downloads extras."
@@ -34,6 +30,7 @@
     - dolphin
     - konsole
     - kate
+    - falkon
     - gwenview
     - okular
     - spectacle
@@ -42,3 +39,70 @@
     - powerdevil
     - kde-gtk-config
     - breeze-gtk
+
+- name: "Desktop (Padrão)"
+  description: "Perfil base para uso geral no dia a dia."
+  hidden: false
+  selected: true
+  critical: false
+  packages:
+    - xdg-utils
+
+- name: "Gaming"
+  description: "Perfil Gamer — Steam, Proton, MangoHUD e GameMode. Requer internet para instalação."
+  hidden: false
+  selected: false
+  critical: false
+  packages:
+    - steam
+    - lutris
+    - gamemode
+    - lib32-gamemode
+    - mangohud
+    - lib32-mangohud
+    - protonup-qt
+    - wine-staging
+    - winetricks
+    - bottles
+    - openrgb
+    - xpadneo-dkms
+    - xone-dkms
+    - lib32-mesa
+    - lib32-vulkan-icd-loader
+    - lib32-vulkan-radeon
+    - lib32-vulkan-nouveau
+    - lib32-vulkan-intel
+
+- name: "Desenvolvimento"
+  description: "Perfil Desenvolvimento — compiladores, Python, Docker e ferramentas de produtividade. Requer internet."
+  hidden: false
+  selected: false
+  critical: false
+  packages:
+    - base-devel
+    - git
+    - python
+    - python-pip
+    - rustup
+    - go
+    - nodejs
+    - npm
+    - docker
+    - docker-compose
+    - podman-compose
+    - code
+    - meld
+    - github-cli
+    - jq
+    - httpie
+
+- name: "Drivers NVIDIA Proprietários"
+  description: "Drivers NVIDIA proprietários (nvidia-dkms). Marque apenas se seu hardware for NVIDIA. Requer internet."
+  hidden: false
+  selected: false
+  critical: false
+  packages:
+    - nvidia-dkms
+    - nvidia-utils
+    - nvidia-settings
+    - lib32-nvidia-utils

@@ -540,6 +540,21 @@ if [ -f /etc/gdm/custom.conf ]; then
     else
         printf '%s\n' 'AutomaticLogin=live' >> /etc/gdm/custom.conf
     fi
+    if grep -q '^TimedLoginEnable=' /etc/gdm/custom.conf; then
+        sed -i 's/^TimedLoginEnable=.*/TimedLoginEnable=True/' /etc/gdm/custom.conf
+    else
+        printf '%s\n' 'TimedLoginEnable=True' >> /etc/gdm/custom.conf
+    fi
+    if grep -q '^TimedLogin=' /etc/gdm/custom.conf; then
+        sed -i 's/^TimedLogin=.*/TimedLogin=live/' /etc/gdm/custom.conf
+    else
+        printf '%s\n' 'TimedLogin=live' >> /etc/gdm/custom.conf
+    fi
+    if grep -q '^TimedLoginDelay=' /etc/gdm/custom.conf; then
+        sed -i 's/^TimedLoginDelay=.*/TimedLoginDelay=0/' /etc/gdm/custom.conf
+    else
+        printf '%s\n' 'TimedLoginDelay=0' >> /etc/gdm/custom.conf
+    fi
     if grep -q '^InitialSetupEnable=' /etc/gdm/custom.conf; then
         sed -i 's/^InitialSetupEnable=.*/InitialSetupEnable=False/' /etc/gdm/custom.conf
     else

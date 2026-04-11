@@ -59,7 +59,7 @@ Presentation {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("Dica: primeiro escolha seu perfil de uso e depois selecione o ambiente gráfico (DE).")
+                text: qsTr("Dica: na etapa Pacotes, selecione seu ambiente gráfico e também os perfis opcionais.")
                 font.pixelSize: 16
                 color: "#ffffff"
             }
