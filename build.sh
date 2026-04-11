@@ -14,6 +14,15 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
+required_cmds=(pacman pacman-key mkarchiso repo-add git su useradd)
+for cmd in "${required_cmds[@]}"; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "ERROR: required command not found: $cmd" >&2
+    exit 1
+  fi
+done
+
+
 # Always clean up temp files on exit (success or failure)
 TEMP_PROFILE=""
 cleanup() {
@@ -103,13 +112,18 @@ echo "==> [3/4] Preparing build profile..."
 TEMP_PROFILE=$(mktemp -d /tmp/clariceos-profile-XXXXXX)
 cp -r "$SCRIPT_DIR/releng/." "$TEMP_PROFILE/"
 
-cat >> "$TEMP_PROFILE/pacman.conf" << EOF
-
+# Put local repo first so pacman prefers locally built calamares over upstream repos.
+PACMAN_CONF="$TEMP_PROFILE/pacman.conf"
+ORIG_PACMAN_CONF="$TEMP_PROFILE/pacman.conf.orig"
+mv "$PACMAN_CONF" "$ORIG_PACMAN_CONF"
+cat > "$PACMAN_CONF" << EOF
 # Local repo with AUR-built packages (calamares, etc.)
 [clariceos-local]
 SigLevel = Optional TrustAll
 Server = file://$LOCAL_REPO_DIR
+
 EOF
+cat "$ORIG_PACMAN_CONF" >> "$PACMAN_CONF"
 
 # Clean previous work dir
 echo "    Cleaning previous work directory..."
