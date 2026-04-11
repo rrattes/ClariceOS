@@ -1,26 +1,27 @@
 #!/usr/bin/env bash
 # ClariceOS — airootfs customization script
 # Runs inside the airootfs chroot during `mkarchiso` build.
-# Requires internet access at build time to download the Dracula GTK theme.
+# Requires internet access at build time to download Fluent/Layan themes.
 
 set -euo pipefail
 
-echo "==> ClariceOS: applying Dracula theme..."
+echo "==> ClariceOS: applying Fluent/Layan themes..."
 
-# ── Dracula GTK theme (GTK3 + GTK4) ─────────────────────────────────────────
-# Download from the official Dracula GitHub releases.
-DRACULA_GTK_URL="https://github.com/dracula/gtk/releases/download/v4.0/Dracula.tar.xz"
-DRACULA_CURSOR_URL="https://github.com/dracula/gtk/releases/download/v4.0/Dracula-cursors.tar.xz"
+# ── Fluent GTK theme (GTK3 + GTK4) ─────────────────────────────────────────
+# Download Fluent GTK theme from official upstream.
+FLUENT_GTK_URL="https://github.com/vinceliuice/Fluent-gtk-theme/archive/refs/heads/master.tar.gz"
 
 mkdir -p /usr/share/themes
 
-echo "--> Downloading Dracula GTK theme..."
-if curl -fsSL -o /tmp/dracula-gtk.tar.xz "${DRACULA_GTK_URL}"; then
-    tar -xJf /tmp/dracula-gtk.tar.xz -C /usr/share/themes/
-    rm -f /tmp/dracula-gtk.tar.xz
-    echo "    Dracula GTK theme installed."
+echo "--> Downloading Fluent GTK theme..."
+if curl -fsSL -o /tmp/fluent-gtk-theme.tar.gz "${FLUENT_GTK_URL}"; then
+    mkdir -p /tmp/fluent-gtk-src
+    tar -xzf /tmp/fluent-gtk-theme.tar.gz -C /tmp/fluent-gtk-src --strip-components=1
+    bash /tmp/fluent-gtk-src/install.sh -d /usr/share/themes 2>/dev/null || true
+    rm -rf /tmp/fluent-gtk-src /tmp/fluent-gtk-theme.tar.gz
+    echo "    Fluent GTK theme installed."
 else
-    echo "    WARNING: Could not download Dracula GTK theme (no internet?). Skipping."
+    echo "    WARNING: Could not download Fluent GTK theme (no internet?). Skipping."
 fi
 
 echo "--> Downloading Tela icon theme..."
@@ -40,23 +41,12 @@ else
     echo "    WARNING: Could not download Tela icon theme (no internet?). Skipping."
 fi
 
-echo "--> Downloading Dracula cursor theme..."
-if curl -fsSL -o /tmp/dracula-cursors.tar.xz "${DRACULA_CURSOR_URL}"; then
-    tar -xJf /tmp/dracula-cursors.tar.xz -C /usr/share/icons/
-    rm -f /tmp/dracula-cursors.tar.xz
-    # Build cursor theme cache
-    for dir in /usr/share/icons/Dracula-cursors /usr/share/icons/Dracula; do
-        [ -d "$dir" ] && gtk-update-icon-cache -f -t "$dir" 2>/dev/null || true
-    done
-    echo "    Dracula cursor theme installed."
-else
-    echo "    WARNING: Could not download Dracula cursor theme. Skipping."
-fi
+
 
 # ── KDE color scheme ─────────────────────────────────────────────────────────
-# Written inline — no download required. Official Dracula palette.
+# Written inline — no download required. ClariceOS Layan-oriented palette.
 mkdir -p /usr/share/color-schemes
-cat > /usr/share/color-schemes/Dracula.colors << 'COLORS'
+cat > /usr/share/color-schemes/Layan.colors << 'COLORS'
 [ColorEffects:Disabled]
 Color=56,56,56
 ColorAmount=0
@@ -162,8 +152,8 @@ ForegroundPositive=80,250,123
 ForegroundVisited=189,147,249
 
 [General]
-ColorScheme=Dracula
-Name=Dracula
+ColorScheme=Layan
+Name=Layan
 shadeSortColumn=true
 
 [KDE]
@@ -177,7 +167,7 @@ inactiveBackground=40,42,54
 inactiveBlend=98,114,164
 inactiveForeground=98,114,164
 COLORS
-echo "    Dracula KDE color scheme written."
+echo "    Layan KDE color scheme written."
 
 # ── dconf GNOME system-wide defaults ─────────────────────────────────────────
 mkdir -p /etc/dconf/db/local.d /etc/dconf/profile
@@ -189,21 +179,21 @@ PROFILE
 
 cat > /etc/dconf/db/local.d/00-clariceos-theme << 'DCONF'
 [org/gnome/desktop/interface]
-gtk-theme='Dracula'
+gtk-theme='Fluent-Dark'
 icon-theme='Tela-dark'
-cursor-theme='Dracula-cursors'
+cursor-theme='Adwaita'
 color-scheme='prefer-dark'
 font-name='JetBrains Mono 11'
 monospace-font-name='JetBrains Mono 11'
 document-font-name='JetBrains Mono 11'
 
 [org/gnome/desktop/wm/preferences]
-theme='Dracula'
+theme='Fluent-Dark'
 button-layout=':minimize,maximize,close'
 titlebar-font='JetBrains Mono Bold 11'
 
 [org/gnome/shell/extensions/user-theme]
-name='Dracula'
+name='Fluent-Dark'
 
 [org/gnome/desktop/default-applications/terminal]
 exec='kitty'
@@ -216,9 +206,9 @@ dconf update && echo "    dconf database compiled."
 mkdir -p /root/.config/gtk-3.0 /root/.config/gtk-4.0
 cat > /root/.config/gtk-3.0/settings.ini << 'GTK'
 [Settings]
-gtk-theme-name=Dracula
+gtk-theme-name=Fluent-Dark
 gtk-icon-theme-name=Tela-dark
-gtk-cursor-theme-name=Dracula-cursors
+gtk-cursor-theme-name=Adwaita
 gtk-font-name=JetBrains Mono 11
 gtk-application-prefer-dark-theme=true
 GTK
@@ -247,8 +237,8 @@ mkdir -p /etc/skel/.config
 
 cat > /etc/skel/.config/kdeglobals << 'KDEGLOBALS'
 [General]
-ColorScheme=Dracula
-Name=Dracula
+ColorScheme=Layan
+Name=Layan
 shadeSortColumn=true
 font=JetBrains Mono,11,-1,5,50,0,0,0,0,0
 fixed=JetBrains Mono,11,-1,5,50,0,0,0,0,0
@@ -258,9 +248,11 @@ menuFont=JetBrains Mono,11,-1,5,50,0,0,0,0,0
 activeFont=JetBrains Mono,11,-1,5,75,0,0,0,0,0
 TerminalApplication=kitty
 TerminalService=kitty.desktop
+BrowserApplication=org.kde.falkon.desktop
+BrowserService=org.kde.falkon.desktop
 
 [KDE]
-ColorScheme=Dracula
+ColorScheme=Layan
 contrast=4
 widgetStyle=Breeze
 
@@ -334,13 +326,13 @@ KDEGLOBALS
 
 cat > /etc/skel/.config/plasmarc << 'PLASMARC'
 [Theme]
-name=breeze-dark
+name=Layan
 PLASMARC
 
 cat > /etc/skel/.config/kwinrc << 'KWINRC'
 [org.kde.kdecoration2]
 library=org.kde.breeze
-theme=__aurorae__svg__Dracula
+theme=Layan
 KWINRC
 
 cat > /etc/skel/.config/breezerc << 'BREEZERC'
@@ -355,9 +347,9 @@ BREEZERC
 
 echo "    /etc/skel dotfiles written."
 
-echo "==> ClariceOS: Dracula theme configuration complete."
+echo "==> ClariceOS: Fluent/Layan theme configuration complete."
 
-# ── Plymouth Dracula theme — generate colour assets ───────────────────────────
+# ── Plymouth Clarice theme — generate colour assets ───────────────────────────
 # The .plymouth descriptor and .script are shipped in airootfs.
 # The three 1×1 PNG colour swatches must be generated at build time because
 # binary files cannot be stored as plain text in the source tree.
@@ -453,7 +445,7 @@ setopt HIST_IGNORE_DUPS HIST_IGNORE_SPACE SHARE_HISTORY INC_APPEND_HISTORY
 # Suggest commands from history as you type (greyed-out ghost text)
 if [[ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
     source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#6272a4"          # Dracula comment colour
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#6272a4"          # Clarice neutral colour
     ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 fi
 
@@ -519,6 +511,27 @@ if ! id -u live &>/dev/null; then
     useradd -m -G wheel,audio,video,storage,optical,network,scanner,uucp live
 fi
 passwd -d live
+# Ensure account is unlocked for display-manager autologin.
+passwd -u live 2>/dev/null || true
+
+# GDM autologin can rely on this group on some setups.
+groupadd -f autologin
+usermod -aG autologin live 2>/dev/null || true
+
+# Re-assert live GDM autologin values to avoid package/default overrides.
+if [ -f /etc/gdm/custom.conf ]; then
+    sed -i 's/^AutomaticLoginEnable=.*/AutomaticLoginEnable=True/' /etc/gdm/custom.conf
+    if grep -q '^AutomaticLogin=' /etc/gdm/custom.conf; then
+        sed -i 's/^AutomaticLogin=.*/AutomaticLogin=live/' /etc/gdm/custom.conf
+    else
+        printf '%s\n' 'AutomaticLogin=live' >> /etc/gdm/custom.conf
+    fi
+    if grep -q '^InitialSetupEnable=' /etc/gdm/custom.conf; then
+        sed -i 's/^InitialSetupEnable=.*/InitialSetupEnable=False/' /etc/gdm/custom.conf
+    else
+        printf '%s\n' 'InitialSetupEnable=False' >> /etc/gdm/custom.conf
+    fi
+fi
 
 # Copy skel configs to live home
 cp -rT /etc/skel/ /home/live/
@@ -542,6 +555,7 @@ chmod 440 /etc/sudoers.d/live
 
 # Set zsh as shell for live user
 if command -v zsh &>/dev/null; then
+    grep -qxF "$(command -v zsh)" /etc/shells || echo "$(command -v zsh)" >> /etc/shells
     chsh -s "$(command -v zsh)" live && echo "    live shell set to zsh." || true
 fi
 

@@ -43,6 +43,14 @@ if [ -z "${ROOT_DEVICE}" ]; then
     exit 1
 fi
 
+# Physical disk that backs the root device (e.g. /dev/nvme0n1 from /dev/nvme0n1p2
+# or from mapper/LVM roots).
+DISK=$(resolve_disk "${ROOT_DEVICE}" || true)
+if [ -z "${DISK}" ] || [ ! -b "/dev/${DISK}" ]; then
+    echo "ERROR: Could not resolve target disk from root device '${ROOT_DEVICE}'."
+    exit 1
+fi
+
 # UEFI: efivarfs is bind-mounted into the chroot by Calamares mount.conf
 UEFI=false
 [ -d /sys/firmware/efi/efivars ] && UEFI=true
