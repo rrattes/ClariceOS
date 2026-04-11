@@ -26,6 +26,8 @@
   critical: false
   packages:
     - plasma-meta
+    - plasma-workspace
+    - kwin
     - plasma-nm
     - plasma-pa
     - plasma-login-manager
