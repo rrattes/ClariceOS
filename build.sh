@@ -8,6 +8,7 @@ WORK_DIR="${1:-/var/tmp/clariceos-work}"
 OUT_DIR="${2:-/var/tmp/clariceos-out}"
 LOCAL_REPO_DIR="${3:-/var/tmp/clariceos-local-repo}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BUILD_TIMESTAMP="$(date +%Y.%m.%d-%H%M)"
 
 if [[ $EUID -ne 0 ]]; then
   echo "ERROR: Run as root (sudo $0)" >&2
@@ -112,6 +113,9 @@ echo "==> [3/4] Preparing build profile..."
 TEMP_PROFILE=$(mktemp -d /tmp/clariceos-profile-XXXXXX)
 cp -r "$SCRIPT_DIR/releng/." "$TEMP_PROFILE/"
 
+# Stamp ISO version with date+time for unique filenames per build run.
+sed -i "s|^iso_version=.*|iso_version=\"${BUILD_TIMESTAMP}\"|" "$TEMP_PROFILE/profiledef.sh"
+
 # Put local repo first so pacman prefers locally built calamares over upstream repos.
 PACMAN_CONF="$TEMP_PROFILE/pacman.conf"
 ORIG_PACMAN_CONF="$TEMP_PROFILE/pacman.conf.orig"
@@ -125,10 +129,13 @@ Server = file://$LOCAL_REPO_DIR
 EOF
 cat "$ORIG_PACMAN_CONF" >> "$PACMAN_CONF"
 
-# Clean previous work dir
+# Clean previous work dir and previous ISO artifacts
 echo "    Cleaning previous work directory..."
 rm -rf "$WORK_DIR"
 mkdir -p "$OUT_DIR"
+
+echo "    Removing previously generated ISOs from output directory..."
+find "$OUT_DIR" -maxdepth 1 -type f -name "*.iso" -print -delete
 
 # ---------------------------------------------------------------------------
 # 4. Run mkarchiso
