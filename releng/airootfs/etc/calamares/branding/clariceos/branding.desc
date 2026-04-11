@@ -22,7 +22,7 @@ images:
 slideshow: "show.qml"
 
 style:
-  sidebarBackground:    "#1a1a2e"
-  sidebarText:          "#ffffff"
-  sidebarTextSelect:    "#97d3e8"
-  sidebarTextHighlight: "#17939d"
+  sidebarBackground:    "#0b1220"
+  sidebarText:          "#cbd5e1"
+  sidebarTextSelect:    "#f8fafc"
+  sidebarTextHighlight: "#7dd3fc"

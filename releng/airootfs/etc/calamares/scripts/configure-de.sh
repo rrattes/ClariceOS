@@ -6,30 +6,29 @@ set -euo pipefail
 
 GNOME_INSTALLED=false
 KDE_INSTALLED=false
+GNOME_GTK_THEME="Fluent-Dark"
+GNOME_CURSOR_THEME="Adwaita"
+POSTINSTALL_DIR="/etc/calamares/scripts/postinstall"
 
 pacman -Q gnome-shell    &>/dev/null 2>&1 && GNOME_INSTALLED=true
 pacman -Q plasma-desktop &>/dev/null 2>&1 && KDE_INSTALLED=true
 
 echo "ClariceOS: GNOME=$GNOME_INSTALLED  KDE=$KDE_INSTALLED"
 
+# Load optional post-install modules (PR1: theme modularization).
+[ -f "${POSTINSTALL_DIR}/20-theme-gnome.sh" ] && source "${POSTINSTALL_DIR}/20-theme-gnome.sh"
+[ -f "${POSTINSTALL_DIR}/21-theme-kde.sh" ] && source "${POSTINSTALL_DIR}/21-theme-kde.sh"
+[ -f "${POSTINSTALL_DIR}/40-repositories.sh" ] && source "${POSTINSTALL_DIR}/40-repositories.sh"
+[ -f "${POSTINSTALL_DIR}/41-pamac.sh" ] && source "${POSTINSTALL_DIR}/41-pamac.sh"
+[ -f "${POSTINSTALL_DIR}/50-flatpak.sh" ] && source "${POSTINSTALL_DIR}/50-flatpak.sh"
+
 # ── Display manager setup ─────────────────────────────────────────────────────
 if $KDE_INSTALLED; then
-    echo ">>> Configuring KDE Plasma + SDDM"
+    echo ">>> Configuring KDE Plasma + Plasma Login Manager"
 
-    systemctl enable  sddm.service 2>/dev/null || true
-    systemctl disable gdm.service  2>/dev/null || true
-
-    mkdir -p /etc/sddm.conf.d
-    cat > /etc/sddm.conf.d/clariceos.conf << 'EOF'
-[Autologin]
-Relogin=false
-Session=
-User=
-
-[General]
-HaltCommand=/usr/bin/systemctl poweroff
-RebootCommand=/usr/bin/systemctl reboot
-EOF
+    systemctl enable  plasmalogin.service 2>/dev/null || true
+    systemctl disable gdm.service          2>/dev/null || true
+    systemctl disable sddm.service         2>/dev/null || true
 
     # Remove GNOME if present (user chose KDE exclusively)
     if $GNOME_INSTALLED; then
@@ -43,7 +42,8 @@ elif $GNOME_INSTALLED; then
     echo ">>> Configuring GNOME + GDM"
 
     systemctl enable  gdm.service  2>/dev/null || true
-    systemctl disable sddm.service 2>/dev/null || true
+    systemctl disable plasmalogin.service 2>/dev/null || true
+    systemctl disable sddm.service        2>/dev/null || true
 
     # Switch GDM autologin from the live 'live' user to the installed user.
     # The live ISO ships AutomaticLogin=live; we replace it with the real user.
@@ -63,39 +63,9 @@ else
     echo "WARNING: No desktop environment detected. Skipping DM configuration."
 fi
 
-# ── Compile dconf database (includes font + terminal overrides) ───────────────
-# Ensure the dconf override file has JetBrains Mono and kitty terminal settings.
-mkdir -p /etc/dconf/db/local.d /etc/dconf/profile
-cat > /etc/dconf/profile/user << 'PROFILE'
-user-db:user
-system-db:local
-PROFILE
-
-cat > /etc/dconf/db/local.d/00-clariceos-theme << 'DCONF'
-[org/gnome/desktop/interface]
-gtk-theme='Dracula'
-icon-theme='Tela-dark'
-cursor-theme='Dracula-cursors'
-color-scheme='prefer-dark'
-font-name='JetBrains Mono 11'
-monospace-font-name='JetBrains Mono 11'
-document-font-name='JetBrains Mono 11'
-
-[org/gnome/desktop/wm/preferences]
-theme='Dracula'
-button-layout=':minimize,maximize,close'
-titlebar-font='JetBrains Mono Bold 11'
-
-[org/gnome/shell/extensions/user-theme]
-name='Dracula'
-
-[org/gnome/desktop/default-applications/terminal]
-exec='kitty'
-exec-arg=''
-DCONF
-
-if command -v dconf &>/dev/null; then
-    dconf update 2>/dev/null && echo ">>> dconf database updated." || true
+# ── Theme modules (PR1) ───────────────────────────────────────────────────────
+if $GNOME_INSTALLED && command -v apply_gnome_theme >/dev/null 2>&1; then
+    apply_gnome_theme "${GNOME_GTK_THEME}" "${GNOME_CURSOR_THEME}"
 fi
 
 # ── Tela icon theme ───────────────────────────────────────────────────────────
@@ -115,7 +85,11 @@ else
     echo "    WARNING: Could not download Tela icon theme (no internet?). Skipping."
 fi
 
-# ── Apply Dracula theme to each new user ──────────────────────────────────────
+if $KDE_INSTALLED && command -v apply_kde_theme >/dev/null 2>&1; then
+    apply_kde_theme
+fi
+
+# ── Apply desktop theme defaults to each new user ─────────────────────────────
 # /etc/skel dotfiles were already copied by the Calamares users module.
 # This block applies gsettings overrides for GNOME users so the theme
 # is active on first login without requiring a dconf write by the user.
@@ -151,11 +125,12 @@ for home_dir in /home/*/; do
     [ -f "${home_dir}.config/starship.toml" ] || \
         cp /etc/skel/.config/starship.toml "${home_dir}.config/starship.toml" 2>/dev/null || true
 
-    # KDE dotfiles (kdeglobals, plasmarc, kwinrc)
+    # KDE profile: force-apply curated defaults so first boot is already customized.
     if $KDE_INSTALLED; then
-        for conf in kdeglobals plasmarc kwinrc breezerc; do
-            [ -f "${home_dir}.config/${conf}" ] || \
-                cp "/etc/skel/.config/${conf}" "${home_dir}.config/" 2>/dev/null || true
+        for conf in kdeglobals plasmarc kwinrc; do
+            [ -f "/etc/skel/.config/${conf}" ] \
+                && cp -f "/etc/skel/.config/${conf}" "${home_dir}.config/${conf}" 2>/dev/null \
+                || true
         done
     fi
 
@@ -170,7 +145,7 @@ for home_dir in /home/*/; do
 
     # Fix ownership
     chown -R "${username}:${username}" "${home_dir}.config/" "${home_dir}.zshrc" 2>/dev/null || true
-    echo ">>> Dracula theme + zsh applied for user: ${username}"
+    echo ">>> Theme profile + zsh applied for user: ${username}"
 done
 
 # ── Set zsh as default shell for root in installed system ─────────────────────
@@ -185,75 +160,15 @@ if command -v zsh &>/dev/null; then
         cp /etc/skel/.config/starship.toml /root/.config/starship.toml 2>/dev/null || true
 fi
 
-# ── Chaotic-AUR setup (installed system) ─────────────────────────────────────
-# Chaotic-AUR provides pre-compiled AUR packages, eliminating the need to
-# build pamac-aur, limine-snapper-sync, openrgb, etc. from source.
-echo ">>> Configuring Chaotic-AUR on installed system..."
-
-setup_chaotic_aur() {
-    # Install keyring
-    if curl -fsSL "https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst" \
-            -o /tmp/chaotic-keyring.pkg.tar.zst 2>/dev/null; then
-        pacman-key --recv-key 3056513887B78AEB \
-            --keyserver keyserver.ubuntu.com 2>/dev/null || true
-        pacman-key --lsign-key 3056513887B78AEB 2>/dev/null || true
-        pacman -U --noconfirm /tmp/chaotic-keyring.pkg.tar.zst 2>/dev/null || true
-        rm -f /tmp/chaotic-keyring.pkg.tar.zst
-    else
-        echo "    WARNING: Chaotic-AUR keyring unavailable (no internet?). Skipping."
-        return 1
-    fi
-
-    # Install mirrorlist
-    curl -fsSL "https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst" \
-        -o /tmp/chaotic-mirrorlist.pkg.tar.zst 2>/dev/null \
-        && pacman -U --noconfirm /tmp/chaotic-mirrorlist.pkg.tar.zst 2>/dev/null || true
-    rm -f /tmp/chaotic-mirrorlist.pkg.tar.zst
-
-    # Add repo to pacman.conf if not already present
-    if ! grep -q "chaotic-aur" /etc/pacman.conf; then
-        cat >> /etc/pacman.conf << 'CHAOTIC_CONF'
-
-# Chaotic-AUR — pre-compiled AUR packages
-[chaotic-aur]
-Include = /etc/pacman.d/chaotic-mirrorlist
-CHAOTIC_CONF
-    fi
-
-    pacman -Sy --noconfirm 2>/dev/null || true
-    echo "    Chaotic-AUR configured."
-}
-
-setup_chaotic_aur || true
-
-# ── Install pamac from Chaotic-AUR (no build from source needed) ──────────────
-echo ">>> Installing pamac-aur..."
-if grep -q "chaotic-aur" /etc/pacman.conf 2>/dev/null; then
-    # Chaotic-AUR available — install directly via pacman
-    pacman -S --noconfirm --needed pamac-aur 2>/dev/null \
-        && echo "    pamac-aur installed from Chaotic-AUR." \
-        || echo "    WARNING: pamac-aur not found in Chaotic-AUR."
-else
-    # Fallback: build from AUR via yay
-    BUILD_USER_PAMAC=$(awk -F: '$3>=1000 && $3<65534 {print $1; exit}' /etc/passwd 2>/dev/null || true)
-    if [ -n "${BUILD_USER_PAMAC}" ] && command -v yay &>/dev/null; then
-        echo "${BUILD_USER_PAMAC} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/99-pamac-install
-        sudo -u "${BUILD_USER_PAMAC}" yay -S --noconfirm --needed pamac-aur 2>/dev/null \
-            && echo "    pamac-aur installed via yay." \
-            || echo "    WARNING: pamac-aur installation failed."
-        rm -f /etc/sudoers.d/99-pamac-install
-    fi
+# ── Repository and package modules (PR2) ──────────────────────────────────────
+if command -v setup_chaotic_aur >/dev/null 2>&1; then
+    setup_chaotic_aur || true
 fi
-
-# ── Flatpak + Flathub ─────────────────────────────────────────────────────────
-echo ">>> Configuring Flatpak + Flathub..."
-if command -v flatpak &>/dev/null; then
-    flatpak remote-add --if-not-exists flathub \
-        https://dl.flathub.org/repo/flathub.flatpakrepo 2>/dev/null \
-        && echo "    Flathub remote added." \
-        || echo "    WARNING: Flathub remote add failed (no internet?)."
-else
-    echo "    WARNING: flatpak not found — skipping."
+if command -v install_pamac >/dev/null 2>&1; then
+    install_pamac
+fi
+if command -v setup_flatpak_flathub >/dev/null 2>&1; then
+    setup_flatpak_flathub
 fi
 
 # ── AppArmor ──────────────────────────────────────────────────────────────────
@@ -326,7 +241,7 @@ install_gpu_drivers() {
 
 install_gpu_drivers || true
 
-# ── Plymouth Dracula theme — deploy to installed system ───────────────────────
+# ── Plymouth Clarice theme — deploy to installed system ───────────────────────
 echo ">>> Installing ClariceOS Plymouth theme..."
 if command -v plymouth &>/dev/null; then
     PLYDIR="/usr/share/plymouth/themes/clariceos"
@@ -336,7 +251,7 @@ if command -v plymouth &>/dev/null; then
     cat > "${PLYDIR}/clariceos.plymouth" << 'PLYDESC'
 [Plymouth Theme]
 Name=ClariceOS
-Description=ClariceOS — Dracula boot splash
+Description=ClariceOS — Clarice boot splash
 ModuleName=script
 
 [script]
@@ -346,7 +261,7 @@ PLYDESC
 
     # Plymouth script
     cat > "${PLYDIR}/clariceos.script" << 'PLYSCRIPT'
-// ClariceOS Plymouth Theme — Dracula colour palette
+// ClariceOS Plymouth Theme — Clarice colour palette
 width  = Window.GetWidth();
 height = Window.GetHeight();
 

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# ClariceOS live session wrapper for Calamares startup.
+set -euo pipefail
+
+LOG_FILE="/tmp/clariceos-calamares-launch.log"
+exec >>"${LOG_FILE}" 2>&1
+
+echo "[$(date -Iseconds)] launch-calamares-live: start"
+
+autostart_user="${USER:-unknown}"
+echo "[$(date -Iseconds)] user=${autostart_user} uid=$(id -u || true)"
+
+# Small triage loop: wait a few seconds for session/sudo/polkit readiness.
+for i in 1 2 3 4 5; do
+    if sudo -n true 2>/dev/null; then
+        echo "[$(date -Iseconds)] sudo -n ready on attempt ${i}"
+        break
+    fi
+    echo "[$(date -Iseconds)] sudo not ready yet (attempt ${i})"
+    sleep 1
+done
+
+if [ "${CLARICE_CALAMARES_DRY_RUN:-0}" = "1" ]; then
+    echo "[$(date -Iseconds)] dry-run enabled, exiting wrapper"
+    exit 0
+fi
+
+if sudo -n true 2>/dev/null; then
+    echo "[$(date -Iseconds)] launching calamares via sudo -E"
+    exec sudo -E calamares
+fi
+
+if command -v pkexec >/dev/null 2>&1; then
+    echo "[$(date -Iseconds)] fallback: launching calamares via pkexec"
+    exec pkexec calamares
+fi
+
+echo "[$(date -Iseconds)] ERROR: unable to launch calamares (no sudo/pkexec path)"
+exit 1

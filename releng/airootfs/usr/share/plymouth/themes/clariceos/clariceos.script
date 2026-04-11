@@ -1,5 +1,5 @@
-// ClariceOS Plymouth Theme — Dracula colour palette
-// Dracula: bg=#282a36  fg=#f8f8f2  purple=#bd93f9  comment=#44475a
+// ClariceOS Plymouth Theme — Clarice colour palette
+// Clarice: bg=#282a36  fg=#f8f8f2  purple=#bd93f9  comment=#44475a
 
 // ── Screen dimensions ─────────────────────────────────────────────────────────
 width  = Window.GetWidth();
@@ -31,7 +31,7 @@ track_spr.SetX(bar_x);
 track_spr.SetY(bar_y);
 track_spr.SetZ(0);
 
-// Fill — #bd93f9 (Dracula purple)
+// Fill — #bd93f9 (Clarice accent)
 fill_spr = Sprite();
 fill_spr.SetX(bar_x);
 fill_spr.SetY(bar_y);

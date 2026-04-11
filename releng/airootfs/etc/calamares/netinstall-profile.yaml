@@ -1,45 +1,11 @@
 ---
-# Escolha seu ambiente gráfico e, em seguida, os perfis opcionais de uso.
-
-- name: "GNOME"
-  description: "GNOME (recomendado) — pronto para uso, funciona offline e não requer downloads extras."
-  hidden: false
-  selected: true
-  critical: false
-  packages:
-    - gnome
-    - gnome-extra
-    - gdm
-    - nautilus
-    - gnome-terminal
-    - gnome-text-editor
-    - eog
-
-- name: "KDE Plasma"
-  description: "KDE Plasma — altamente personalizável. Requer internet durante a instalação para baixar pacotes."
-  hidden: false
-  selected: false
-  critical: false
-  packages:
-    - plasma-meta
-    - plasma-nm
-    - plasma-pa
-    - plasma-login-manager
-    - dolphin
-    - konsole
-    - kate
-    - falkon
-    - gwenview
-    - okular
-    - spectacle
-    - kscreen
-    - bluedevil
-    - powerdevil
-    - kde-gtk-config
-    - breeze-gtk
+# Etapa 1: escolha do tipo de uso do sistema.
+#
+# Escolha o perfil que mais combina com você.
+# Dica: se não selecionar nada, o sistema será instalado com perfil Desktop padrão.
 
 - name: "Desktop (Padrão)"
-  description: "Perfil base para uso geral no dia a dia."
+  description: "Uso geral para estudo, navegação e produtividade diária."
   hidden: false
   selected: true
   critical: false
