@@ -1,0 +1,43 @@
+---
+# Etapa 2: escolha do Ambiente Gráfico (DE).
+#
+# Selecione apenas um ambiente principal:
+# - GNOME: já vem na ISO e funciona offline.
+# - KDE Plasma: baixado durante a instalação (requer internet).
+
+- name: "GNOME"
+  description: "GNOME (recomendado) — pronto para uso, funciona offline e não requer downloads extras."
+  hidden: false
+  selected: true
+  critical: false
+  packages:
+    - gnome
+    - gnome-extra
+    - gdm
+    - nautilus
+    - gnome-terminal
+    - gnome-text-editor
+    - eog
+
+- name: "KDE Plasma"
+  description: "KDE Plasma — altamente personalizável. Requer internet durante a instalação para baixar pacotes."
+  hidden: false
+  selected: false
+  critical: false
+  packages:
+    - plasma-meta
+    - plasma-nm
+    - plasma-pa
+    - plasma-login-manager
+    - dolphin
+    - konsole
+    - kate
+    - falkon
+    - gwenview
+    - okular
+    - spectacle
+    - kscreen
+    - bluedevil
+    - powerdevil
+    - kde-gtk-config
+    - breeze-gtk
