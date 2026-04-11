@@ -484,7 +484,7 @@ Version=1.5
 Name=Install Clarice OS
 GenericName=System Installer
 Comment=Install Clarice OS to your computer
-Exec=sudo -E calamares
+Exec=/usr/local/bin/launch-calamares-live
 Icon=calamares
 Terminal=false
 Categories=System;
@@ -498,7 +498,7 @@ cat > /etc/xdg/autostart/calamares.desktop << 'AUTOSTART'
 Type=Application
 Name=Install Clarice OS
 Comment=Start Calamares installer on login
-Exec=sudo -E calamares
+Exec=/usr/local/bin/launch-calamares-live
 Icon=calamares
 Terminal=false
 X-GNOME-Autostart-enabled=true

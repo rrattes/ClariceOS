@@ -2,7 +2,7 @@
 Type=Application
 Name=Install Clarice OS
 Comment=Start Calamares installer on login
-Exec=sudo -E calamares
+Exec=/usr/local/bin/launch-calamares-live
 Icon=calamares
 Terminal=false
 X-GNOME-Autostart-enabled=true
