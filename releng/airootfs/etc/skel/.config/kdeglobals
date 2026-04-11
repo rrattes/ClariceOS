@@ -1,6 +1,6 @@
 [General]
-ColorScheme=Dracula
-Name=Dracula
+ColorScheme=Layan
+Name=Layan
 shadeSortColumn=true
 font=JetBrains Mono,11,-1,5,50,0,0,0,0,0
 fixed=JetBrains Mono,11,-1,5,50,0,0,0,0,0
@@ -10,9 +10,11 @@ menuFont=JetBrains Mono,11,-1,5,50,0,0,0,0,0
 activeFont=JetBrains Mono,11,-1,5,75,0,0,0,0,0
 TerminalApplication=kitty
 TerminalService=kitty.desktop
+BrowserApplication=org.kde.falkon.desktop
+BrowserService=org.kde.falkon.desktop
 
 [KDE]
-ColorScheme=Dracula
+ColorScheme=Layan
 contrast=4
 widgetStyle=Breeze
 
